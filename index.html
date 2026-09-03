@@ -27,7 +27,7 @@
 <body>
 
 <div class="card">
-    <h2>Box Bar Calculator <small style="display:block; font-size:12px; font-weight:normal; color:#888; margin-top:4px;">by VisHArTs</small></h2>
+    <h2>Box Bar Calculator <small style="display:block; font-size:12px; font-weight:normal; color:#888; margin-top:4px;">by VisHArts</small></h2>
 
     <label>මුළු දිග (Length):</label>
     <div class="input-group">
@@ -42,12 +42,16 @@
     <label>එක් බටයක දිග (අඩි):</label>
     <input type="number" id="barLength" value="18">
 
+    <label>එක් බටයක මිල (රු.):</label>
+    <input type="number" id="barPrice" placeholder="e.g. 2500" step="any">
+
     <button onclick="calculate()">ගණන් බලන්න</button>
 
     <div class="result" id="output" style="display:none;">
         <p><b>සම්පූර්ණ ප්‍රමාණය:</b> <span id="totalFeet"></span> Feet (<span id="totalInches"></span> Inches)</p>
         <p><b>මිලදී ගත යුතු බට ගණන:</b> <span id="buyBars"></span></p>
         <p><b>ඉතිරි වන ප්‍රමාණය:</b> <span id="remainingFeet"></span> Feet (<span id="remainingInches"></span> Inches)</p>
+        <p id="costRow" style="display:none;"><b>මුළු මිල:</b> රු. <span id="totalCost"></span></p>
     </div>
 </div>
 
@@ -56,6 +60,7 @@ function calculate() {
     let feet = parseFloat(document.getElementById('feetQty').value) || 0;
     let inches = parseFloat(document.getElementById('inchQty').value) || 0;
     let barLen = parseFloat(document.getElementById('barLength').value) || 18;
+    let barPrice = parseFloat(document.getElementById('barPrice').value) || 0;
 
     let totalInchesInput = (feet * 12) + inches;
     let totalFeetInput = totalInchesInput / 12;
@@ -76,6 +81,14 @@ function calculate() {
     document.getElementById('buyBars').innerText = buyBars + " ක් (අඩි " + (buyBars * barLen) + ")";
     document.getElementById('remainingFeet').innerText = remainingFeet.toFixed(2);
     document.getElementById('remainingInches').innerText = remainingInches.toFixed(1);
+
+    if (barPrice > 0) {
+        let totalCost = buyBars * barPrice;
+        document.getElementById('totalCost').innerText = totalCost.toLocaleString('en-LK', {maximumFractionDigits: 2});
+        document.getElementById('costRow').style.display = 'block';
+    } else {
+        document.getElementById('costRow').style.display = 'none';
+    }
 
     document.getElementById('output').style.display = 'block';
 }
