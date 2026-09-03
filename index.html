@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#007bff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Box Bar Calculator</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; max-width: 400px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-top: 0; }
+        label { font-weight: bold; display: block; margin-top: 15px; }
+        .input-group { display: flex; gap: 10px; }
+        .input-box { flex: 1; }
+        input { width: 100%; padding: 12px; margin-top: 5px; font-size: 18px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; background: #007bff; color: white; border: none; padding: 12px; margin-top: 15px; font-size: 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .result { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 6px; }
+        .result p { margin: 8px 0; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Box Bar Calculator</h2>
+
+    <label>මුළු දිග (Length):</label>
+    <div class="input-group">
+        <div class="input-box">
+            <input type="number" id="feetQty" placeholder="අඩි (e.g. 3)" step="any">
+        </div>
+        <div class="input-box">
+            <input type="number" id="inchQty" placeholder="අඟල් (e.g. 6)" step="any">
+        </div>
+    </div>
+
+    <label>එක් බටයක දිග (අඩි):</label>
+    <input type="number" id="barLength" value="18">
+
+    <button onclick="calculate()">ගණන් බලන්න</button>
+
+    <div class="result" id="output" style="display:none;">
+        <p><b>සම්පූර්ණ ප්‍රමාණය:</b> <span id="totalFeet"></span> Feet (<span id="totalInches"></span> Inches)</p>
+        <p><b>මිලදී ගත යුතු බට ගණන:</b> <span id="buyBars"></span></p>
+        <p><b>ඉතිරි වන ප්‍රමාණය:</b> <span id="remainingFeet"></span> Feet (<span id="remainingInches"></span> Inches)</p>
+    </div>
+</div>
+
+<script>
+function calculate() {
+    let feet = parseFloat(document.getElementById('feetQty').value) || 0;
+    let inches = parseFloat(document.getElementById('inchQty').value) || 0;
+    let barLen = parseFloat(document.getElementById('barLength').value) || 18;
+
+    let totalInchesInput = (feet * 12) + inches;
+    let totalFeetInput = totalInchesInput / 12;
+    let barFraction = totalFeetInput / barLen;
+
+    if (barFraction <= 0) {
+        alert("කරුණාකර අඩි හෝ අඟල් ගණන ඇතුළත් කරන්න.");
+        return;
+    }
+
+    let totalFeet = totalFeetInput;
+    let buyBars = Math.ceil(barFraction);
+    let remainingFeet = (buyBars * barLen) - totalFeet;
+    let remainingInches = remainingFeet * 12;
+
+    document.getElementById('totalFeet').innerText = totalFeet.toFixed(2);
+    document.getElementById('totalInches').innerText = (totalFeet * 12).toFixed(1);
+    document.getElementById('buyBars').innerText = buyBars + " ක් (අඩි " + (buyBars * barLen) + ")";
+    document.getElementById('remainingFeet').innerText = remainingFeet.toFixed(2);
+    document.getElementById('remainingInches').innerText = remainingInches.toFixed(1);
+
+    document.getElementById('output').style.display = 'block';
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    });
+}
+</script>
+
+</body>
+</html>
