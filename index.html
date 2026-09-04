@@ -12,86 +12,453 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>Box Bar Calculator</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; max-width: 400px; margin: auto; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        label { font-weight: bold; display: block; margin-top: 15px; }
+        :root {
+            --bg: #f4f4f9; --card: #ffffff; --text: #333333; --muted: #888888;
+            --border: #cccccc; --input-bg: #ffffff; --result-bg: #e9ecef;
+            --primary: #007bff; --danger: #dc3545; --whatsapp: #25D366;
+        }
+        body.dark {
+            --bg: #121212; --card: #1e1e1e; --text: #f0f0f0; --muted: #aaaaaa;
+            --border: #444444; --input-bg: #2a2a2a; --result-bg: #2a2a2a;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: sans-serif; padding: 15px; background: var(--bg); max-width: 420px; margin: auto; color: var(--text); transition: background 0.2s, color 0.2s; }
+        .card { background: var(--card); padding: 18px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; }
+        h2 { text-align: center; color: var(--text); margin: 0; flex: 1; }
+        h2 small { display: block; font-size: 12px; font-weight: normal; color: var(--muted); margin-top: 4px; }
+        h3 { margin-top: 0; color: var(--text); font-size: 16px; }
+        .theme-btn { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; font-size: 16px; cursor: pointer; flex-shrink: 0; }
+        label { font-weight: bold; display: block; margin-top: 12px; font-size: 14px; }
         .input-group { display: flex; gap: 10px; }
         .input-box { flex: 1; }
-        input { width: 100%; padding: 12px; margin-top: 5px; font-size: 18px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; background: #007bff; color: white; border: none; padding: 12px; margin-top: 15px; font-size: 18px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .result { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 6px; }
-        .result p { margin: 8px 0; font-size: 16px; }
+        input, select { width: 100%; padding: 11px; margin-top: 5px; font-size: 16px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--input-bg); color: var(--text); }
+        button { width: 100%; border: none; padding: 12px; margin-top: 12px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-whatsapp { background: var(--whatsapp); color: white; }
+        .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 6px 10px; margin-top: 0; font-size: 13px; width: auto; }
+        .result { margin-top: 15px; padding: 12px; background: var(--result-bg); border-radius: 6px; }
+        .result p { margin: 6px 0; font-size: 15px; }
+        .item-row { background: var(--result-bg); border-radius: 8px; padding: 10px 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .item-info { font-size: 14px; line-height: 1.4; }
+        .item-info b { font-size: 15px; }
+        .grand-total { font-size: 18px; text-align: center; margin-top: 10px; padding: 12px; background: var(--primary); color: white; border-radius: 8px; }
+        .hist-entry { border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 10px; }
+        .hist-entry .row { display: flex; justify-content: space-between; align-items: center; }
+        .hist-buttons { display: flex; gap: 8px; margin-top: 8px; }
+        .hist-buttons button { margin-top: 0; padding: 8px; font-size: 13px; }
+        .empty-msg { color: var(--muted); text-align: center; font-size: 14px; padding: 10px 0; }
+        .two-col { display: flex; gap: 10px; }
+        .two-col > div { flex: 1; }
+        .tab-bar { display: flex; gap: 8px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; margin-top: 0; padding: 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); font-size: 15px; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Box Bar Calculator <small style="display:block; font-size:12px; font-weight:normal; color:#888; margin-top:4px;">by VisHArTs</small></h2>
+<div class="card header-row">
+    <div style="width:38px;"></div>
+    <h2>Box Bar Calculator<small>by VisHArts</small></h2>
+    <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙</button>
+</div>
 
-    <label>මුළු දිග (Length):</label>
-    <div class="input-group">
-        <div class="input-box">
-            <input type="number" id="feetQty" placeholder="අඩි (e.g. 3)" step="any">
+<div class="tab-bar">
+    <button class="tab-btn active" id="tabBtnSimple" onclick="switchTab('simple')">Simple</button>
+    <button class="tab-btn" id="tabBtnAdvanced" onclick="switchTab('advanced')">Advanced</button>
+</div>
+
+<!-- SIMPLE TAB -->
+<div class="tab-panel active" id="tabSimple">
+    <div class="card">
+        <label>මුළු දිග (Length):</label>
+        <div class="input-group">
+            <div class="input-box">
+                <input type="number" id="s_feetQty" placeholder="අඩි (e.g. 3)" step="any" oninput="simpleCalculate(true)">
+            </div>
+            <div class="input-box">
+                <input type="number" id="s_inchQty" placeholder="අඟල් (e.g. 6)" step="any" oninput="simpleCalculate(true)">
+            </div>
         </div>
-        <div class="input-box">
-            <input type="number" id="inchQty" placeholder="අඟල් (e.g. 6)" step="any">
+
+        <label>එක් බටයක දිග (අඩි):</label>
+        <input type="number" id="s_barLength" value="20" oninput="simpleCalculate(true)">
+
+        <label>එක් බටයක මිල (රු.):</label>
+        <input type="number" id="s_barPrice" placeholder="e.g. 2500" step="any" oninput="simpleCalculate(true)">
+
+        <div class="result" id="s_output" style="display:none;">
+            <p><b>සම්පූර්ණ ප්‍රමාණය:</b> <span id="s_totalFeet"></span> Feet</p>
+            <p><b>මිලදී ගත යුතු බට ගණන:</b> <span id="s_buyBars"></span></p>
+            <p><b>ඉතිරි වන ප්‍රමාණය:</b> <span id="s_remainingFeet"></span> Feet</p>
+            <p id="s_costRow" style="display:none;"><b>මුළු මිල:</b> රු. <span id="s_totalCost"></span></p>
         </div>
-    </div>
-
-    <label>එක් බටයක දිග (අඩි):</label>
-    <input type="number" id="barLength" value="18">
-
-    <label>එක් බටයක මිල (රු.):</label>
-    <input type="number" id="barPrice" placeholder="e.g. 2500" step="any">
-
-    <button onclick="calculate()">ගණන් බලන්න</button>
-
-    <div class="result" id="output" style="display:none;">
-        <p><b>සම්පූර්ණ ප්‍රමාණය:</b> <span id="totalFeet"></span> Feet (<span id="totalInches"></span> Inches)</p>
-        <p><b>මිලදී ගත යුතු බට ගණන:</b> <span id="buyBars"></span></p>
-        <p><b>ඉතිරි වන ප්‍රමාණය:</b> <span id="remainingFeet"></span> Feet (<span id="remainingInches"></span> Inches)</p>
-        <p id="costRow" style="display:none;"><b>මුළු මිල:</b> රු. <span id="totalCost"></span></p>
     </div>
 </div>
 
+<!-- ADVANCED TAB -->
+<div class="tab-panel" id="tabAdvanced">
+
+    <div class="card">
+        <h3>Job විස්තර</h3>
+        <div class="two-col">
+            <div>
+                <label>දිනය:</label>
+                <input type="date" id="jobDate">
+            </div>
+            <div>
+                <label>ස්ථානය:</label>
+                <input type="text" id="jobLocation" placeholder="e.g. Matale site">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>අයිතමය එකතු කරන්න</h3>
+
+        <label>Box Bar Size:</label>
+        <select id="barType" onchange="handleSizeChange()">
+            <option value="1&quot; x 1&quot;" data-len="20">1" x 1"</option>
+            <option value="1&quot; x 1.5&quot;" data-len="20">1" x 1.5"</option>
+            <option value="1&quot; x 2&quot;" data-len="20">1" x 2"</option>
+            <option value="1.5&quot; x 1.5&quot;" data-len="20">1.5" x 1.5"</option>
+            <option value="2&quot; x 2&quot;" data-len="20">2" x 2"</option>
+            <option value="2&quot; x 1&quot;" data-len="20">2" x 1"</option>
+            <option value="2&quot; x 3&quot;" data-len="20">2" x 3"</option>
+            <option value="2&quot; x 4&quot;" data-len="20">2" x 4"</option>
+            <option value="3&quot; x 3&quot;" data-len="20">3" x 3"</option>
+            <option value="__add_new__" data-len="20">+ අලුත් size එකක් Add කරන්න</option>
+        </select>
+
+        <label>මුළු දිග (Length):</label>
+        <div class="input-group">
+            <div class="input-box">
+                <input type="number" id="feetQty" placeholder="අඩි (e.g. 3)" step="any" oninput="livePreview()">
+            </div>
+            <div class="input-box">
+                <input type="number" id="inchQty" placeholder="අඟල් (e.g. 6)" step="any" oninput="livePreview()">
+            </div>
+        </div>
+
+        <label>එක් බටයක දිග (අඩි):</label>
+        <input type="number" id="barLength" value="20" oninput="livePreview()">
+
+        <label>Waste % (cutting loss):</label>
+        <input type="number" id="wastePct" value="0" step="any" placeholder="e.g. 3" oninput="livePreview()">
+
+        <label>එක් බටයක මිල (රු.):</label>
+        <input type="number" id="barPrice" placeholder="e.g. 2500" step="any" oninput="livePreview()">
+
+        <div class="result" id="livePreviewBox" style="display:none; margin-top:12px;"></div>
+
+        <button class="btn-primary" onclick="addItem()">+ අයිතමය එකතු කරන්න</button>
+    </div>
+
+    <div class="card" id="itemsCard" style="display:none;">
+        <h3>අයිතම ලැයිස්තුව</h3>
+        <div id="itemsList"></div>
+        <div class="grand-total" id="grandTotal"></div>
+        <button class="btn-whatsapp" onclick="shareWhatsapp()">📱 WhatsApp වලින් Share කරන්න</button>
+        <button class="btn-primary" onclick="saveToHistory()">💾 History එකට Save කරන්න</button>
+        <button class="btn-secondary" onclick="clearItems()">🗑 අලුතින් පටන් ගන්න</button>
+    </div>
+
+    <div class="card">
+        <h3>History</h3>
+        <div id="historyList"><p class="empty-msg">Saved quotations නෑ තාම</p></div>
+    </div>
+
+</div>
+
 <script>
-function calculate() {
+let items = [];
+
+function switchTab(tab) {
+    document.getElementById('tabSimple').classList.toggle('active', tab === 'simple');
+    document.getElementById('tabAdvanced').classList.toggle('active', tab === 'advanced');
+    document.getElementById('tabBtnSimple').classList.toggle('active', tab === 'simple');
+    document.getElementById('tabBtnAdvanced').classList.toggle('active', tab === 'advanced');
+    localStorage.setItem('boxbar_last_tab', tab);
+}
+
+function computeItem(feet, inches, barLen, wastePct, barPrice, type) {
+    let totalInchesInput = (feet * 12) + inches;
+    let totalFeet = totalInchesInput / 12;
+    let totalFeetWithWaste = totalFeet * (1 + (wastePct / 100));
+    let barFraction = totalFeetWithWaste / barLen;
+    let buyBars = Math.ceil(barFraction);
+    let remainingFeet = (buyBars * barLen) - totalFeetWithWaste;
+    let cost = buyBars * barPrice;
+    return { type, totalFeet, totalFeetWithWaste, barLen, buyBars, remainingFeet, barPrice, cost };
+}
+
+/* ---------- SIMPLE TAB ---------- */
+function simpleCalculate(silent) {
+    let feet = parseFloat(document.getElementById('s_feetQty').value) || 0;
+    let inches = parseFloat(document.getElementById('s_inchQty').value) || 0;
+    let barLen = parseFloat(document.getElementById('s_barLength').value) || 20;
+    let barPrice = parseFloat(document.getElementById('s_barPrice').value) || 0;
+
+    if ((feet + inches) <= 0) {
+        document.getElementById('s_output').style.display = 'none';
+        if (!silent) alert("කරුණාකර අඩි හෝ අඟල් ගණන ඇතුළත් කරන්න.");
+        return;
+    }
+
+    let r = computeItem(feet, inches, barLen, 0, barPrice, '');
+
+    document.getElementById('s_totalFeet').innerText = r.totalFeet.toFixed(2);
+    document.getElementById('s_buyBars').innerText = r.buyBars + " ක් (අඩි " + (r.buyBars * barLen) + ")";
+    document.getElementById('s_remainingFeet').innerText = r.remainingFeet.toFixed(2);
+
+    if (barPrice > 0) {
+        document.getElementById('s_totalCost').innerText = r.cost.toLocaleString('en-LK');
+        document.getElementById('s_costRow').style.display = 'block';
+    } else {
+        document.getElementById('s_costRow').style.display = 'none';
+    }
+
+    document.getElementById('s_output').style.display = 'block';
+}
+
+/* ---------- ADVANCED TAB ---------- */
+function applyPreset() {
+    let sel = document.getElementById('barType');
+    let len = sel.options[sel.selectedIndex].getAttribute('data-len');
+    document.getElementById('barLength').value = len;
+}
+
+function handleSizeChange() {
+    let sel = document.getElementById('barType');
+    if (sel.value === '__add_new__') {
+        let newSize = prompt("අලුත් size එක type කරන්න (e.g. 1.5\" x 2\"):");
+        if (newSize && newSize.trim()) {
+            addCustomSize(newSize.trim());
+            sel.value = newSize.trim();
+        } else {
+            sel.selectedIndex = 0;
+        }
+    }
+    applyPreset();
+    livePreview();
+}
+
+function livePreview() {
     let feet = parseFloat(document.getElementById('feetQty').value) || 0;
     let inches = parseFloat(document.getElementById('inchQty').value) || 0;
-    let barLen = parseFloat(document.getElementById('barLength').value) || 18;
+    let barLen = parseFloat(document.getElementById('barLength').value) || 20;
+    let wastePct = parseFloat(document.getElementById('wastePct').value) || 0;
     let barPrice = parseFloat(document.getElementById('barPrice').value) || 0;
+    let box = document.getElementById('livePreviewBox');
 
-    let totalInchesInput = (feet * 12) + inches;
-    let totalFeetInput = totalInchesInput / 12;
-    let barFraction = totalFeetInput / barLen;
+    if ((feet + inches) <= 0) {
+        box.style.display = 'none';
+        return;
+    }
 
-    if (barFraction <= 0) {
+    let r = computeItem(feet, inches, barLen, wastePct, barPrice, '');
+    box.style.display = 'block';
+    box.innerHTML = `<p><b>බට ගණන:</b> ${r.buyBars} (අඩි ${r.buyBars * barLen})</p>
+        <p><b>ඉතිරි:</b> ${r.remainingFeet.toFixed(2)} අඩි</p>
+        ${barPrice > 0 ? `<p><b>මිල:</b> රු. ${r.cost.toLocaleString('en-LK')}</p>` : ''}`;
+}
+
+function addCustomSize(sizeLabel) {
+    let sizes = JSON.parse(localStorage.getItem('boxbar_custom_sizes') || '[]');
+    if (!sizes.includes(sizeLabel)) {
+        sizes.push(sizeLabel);
+        localStorage.setItem('boxbar_custom_sizes', JSON.stringify(sizes));
+    }
+    insertSizeOption(sizeLabel);
+}
+
+function insertSizeOption(sizeLabel) {
+    let sel = document.getElementById('barType');
+    let exists = Array.from(sel.options).some(o => o.value === sizeLabel);
+    if (exists) return;
+    let opt = document.createElement('option');
+    opt.value = sizeLabel;
+    opt.text = sizeLabel;
+    opt.setAttribute('data-len', '20');
+    let addNewOpt = sel.querySelector('option[value="__add_new__"]');
+    sel.insertBefore(opt, addNewOpt);
+}
+
+function loadCustomSizes() {
+    let sizes = JSON.parse(localStorage.getItem('boxbar_custom_sizes') || '[]');
+    sizes.forEach(s => insertSizeOption(s));
+}
+
+function addItem() {
+    let feet = parseFloat(document.getElementById('feetQty').value) || 0;
+    let inches = parseFloat(document.getElementById('inchQty').value) || 0;
+    let barLen = parseFloat(document.getElementById('barLength').value) || 20;
+    let wastePct = parseFloat(document.getElementById('wastePct').value) || 0;
+    let barPrice = parseFloat(document.getElementById('barPrice').value) || 0;
+    let type = document.getElementById('barType').value;
+
+    if ((feet + inches) <= 0) {
         alert("කරුණාකර අඩි හෝ අඟල් ගණන ඇතුළත් කරන්න.");
         return;
     }
 
-    let totalFeet = totalFeetInput;
-    let buyBars = Math.ceil(barFraction);
-    let remainingFeet = (buyBars * barLen) - totalFeet;
-    let remainingInches = remainingFeet * 12;
+    let result = computeItem(feet, inches, barLen, wastePct, barPrice, type);
+    items.push(result);
+    renderItems();
 
-    document.getElementById('totalFeet').innerText = totalFeet.toFixed(2);
-    document.getElementById('totalInches').innerText = (totalFeet * 12).toFixed(1);
-    document.getElementById('buyBars').innerText = buyBars + " ක් (අඩි " + (buyBars * barLen) + ")";
-    document.getElementById('remainingFeet').innerText = remainingFeet.toFixed(2);
-    document.getElementById('remainingInches').innerText = remainingInches.toFixed(1);
-
-    if (barPrice > 0) {
-        let totalCost = buyBars * barPrice;
-        document.getElementById('totalCost').innerText = totalCost.toLocaleString('en-LK', {maximumFractionDigits: 2});
-        document.getElementById('costRow').style.display = 'block';
-    } else {
-        document.getElementById('costRow').style.display = 'none';
-    }
-
-    document.getElementById('output').style.display = 'block';
+    document.getElementById('feetQty').value = '';
+    document.getElementById('inchQty').value = '';
+    document.getElementById('barPrice').value = '';
+    document.getElementById('livePreviewBox').style.display = 'none';
 }
+
+function removeItem(idx) {
+    items.splice(idx, 1);
+    renderItems();
+}
+
+function renderItems() {
+    let card = document.getElementById('itemsCard');
+    let list = document.getElementById('itemsList');
+    if (items.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+    card.style.display = 'block';
+    list.innerHTML = '';
+    let grandBars = 0, grandCost = 0;
+
+    items.forEach((it, idx) => {
+        grandBars += it.buyBars;
+        grandCost += it.cost;
+        let div = document.createElement('div');
+        div.className = 'item-row';
+        div.innerHTML = `
+            <div class="item-info">
+                <b>${it.type}</b><br>
+                දිග: ${it.totalFeet.toFixed(2)} අඩි | බට: ${it.buyBars} (${it.barLen} අඩි)<br>
+                ඉතිරි: ${it.remainingFeet.toFixed(2)} අඩි${it.cost > 0 ? ' | රු. ' + it.cost.toLocaleString('en-LK') : ''}
+            </div>
+            <button class="btn-danger" onclick="removeItem(${idx})">✕</button>
+        `;
+        list.appendChild(div);
+    });
+
+    document.getElementById('grandTotal').innerText =
+        `මුළු බට: ${grandBars} | මුළු මිල: රු. ${grandCost.toLocaleString('en-LK')}`;
+}
+
+function clearItems() {
+    if (items.length && !confirm("සියලුම අයිතම ඉවත් කරන්නද?")) return;
+    items = [];
+    renderItems();
+}
+
+function buildSummaryText() {
+    let date = document.getElementById('jobDate').value || '-';
+    let loc = document.getElementById('jobLocation').value || '-';
+    let lines = [`📋 *${loc}* - ${date}`, ''];
+    let grandBars = 0, grandCost = 0;
+    items.forEach((it, i) => {
+        grandBars += it.buyBars;
+        grandCost += it.cost;
+        lines.push(`${i+1}. ${it.type} - ${it.buyBars} bars (${it.totalFeet.toFixed(1)} අඩි)${it.cost > 0 ? ' - රු.' + it.cost.toLocaleString('en-LK') : ''}`);
+    });
+    lines.push('');
+    lines.push(`------------------`);
+    lines.push(`මුළු බට: ${grandBars}`);
+    lines.push(`මුළු මිල: රු. ${grandCost.toLocaleString('en-LK')}`);
+    return lines.join('\n');
+}
+
+function shareWhatsapp() {
+    if (items.length === 0) { alert("කරුණාකර අයිතමයක් එකතු කරන්න."); return; }
+    let text = buildSummaryText();
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+function saveToHistory() {
+    if (items.length === 0) { alert("කරුණාකර අයිතමයක් එකතු කරන්න."); return; }
+    let date = document.getElementById('jobDate').value || new Date().toISOString().slice(0,10);
+    let loc = document.getElementById('jobLocation').value || '-';
+    let grandCost = items.reduce((s, it) => s + it.cost, 0);
+    let grandBars = items.reduce((s, it) => s + it.buyBars, 0);
+
+    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
+    history.unshift({
+        date, loc, items: JSON.parse(JSON.stringify(items)), grandBars, grandCost,
+        savedAt: new Date().toLocaleString()
+    });
+    localStorage.setItem('boxbar_history', JSON.stringify(history));
+    renderHistory();
+    alert("Save කළා ✅");
+}
+
+function renderHistory() {
+    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
+    let container = document.getElementById('historyList');
+    if (history.length === 0) {
+        container.innerHTML = '<p class="empty-msg">Saved quotations නෑ තාම</p>';
+        return;
+    }
+    container.innerHTML = '';
+    history.forEach((h, idx) => {
+        let div = document.createElement('div');
+        div.className = 'hist-entry';
+        div.innerHTML = `
+            <div class="row">
+                <div><b>${h.loc}</b> — ${h.date}</div>
+                <div>රු. ${h.grandCost.toLocaleString('en-LK')}</div>
+            </div>
+            <div class="hist-buttons">
+                <button class="btn-secondary" onclick="loadHistory(${idx})">Load</button>
+                <button class="btn-danger" onclick="deleteHistory(${idx})">Delete</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function loadHistory(idx) {
+    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
+    let h = history[idx];
+    if (!h) return;
+    document.getElementById('jobDate').value = h.date;
+    document.getElementById('jobLocation').value = h.loc;
+    items = JSON.parse(JSON.stringify(h.items));
+    renderItems();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function deleteHistory(idx) {
+    if (!confirm("මේ record එක delete කරන්නද?")) return;
+    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
+    history.splice(idx, 1);
+    localStorage.setItem('boxbar_history', JSON.stringify(history));
+    renderHistory();
+}
+
+/* ---------- SHARED ---------- */
+function toggleTheme() {
+    let isDark = document.body.classList.toggle('dark');
+    localStorage.setItem('boxbar_theme', isDark ? 'dark' : 'light');
+    document.getElementById('themeToggle').innerText = isDark ? '☀️' : '🌙';
+}
+
+function initTheme() {
+    let saved = localStorage.getItem('boxbar_theme');
+    if (saved === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('themeToggle').innerText = '☀️';
+    }
+}
+
+initTheme();
+renderHistory();
+loadCustomSizes();
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
