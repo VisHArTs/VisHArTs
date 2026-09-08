@@ -1,471 +1,542 @@
 <!DOCTYPE html>
 <html lang="si">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#007bff">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <title>Box Bar Calculator</title>
-    <style>
-        :root {
-            --bg: #f4f4f9; --card: #ffffff; --text: #333333; --muted: #888888;
-            --border: #cccccc; --input-bg: #ffffff; --result-bg: #e9ecef;
-            --primary: #007bff; --danger: #dc3545; --whatsapp: #25D366;
-        }
-        body.dark {
-            --bg: #121212; --card: #1e1e1e; --text: #f0f0f0; --muted: #aaaaaa;
-            --border: #444444; --input-bg: #2a2a2a; --result-bg: #2a2a2a;
-        }
-        * { box-sizing: border-box; }
-        body { font-family: sans-serif; padding: 15px; background: var(--bg); max-width: 420px; margin: auto; color: var(--text); transition: background 0.2s, color 0.2s; }
-        .card { background: var(--card); padding: 18px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        .header-row { display: flex; justify-content: space-between; align-items: center; }
-        h2 { text-align: center; color: var(--text); margin: 0; flex: 1; }
-        h2 small { display: block; font-size: 12px; font-weight: normal; color: var(--muted); margin-top: 4px; }
-        h3 { margin-top: 0; color: var(--text); font-size: 16px; }
-        .theme-btn { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 50%; width: 38px; height: 38px; font-size: 16px; cursor: pointer; flex-shrink: 0; }
-        label { font-weight: bold; display: block; margin-top: 12px; font-size: 14px; }
-        .input-group { display: flex; gap: 10px; }
-        .input-box { flex: 1; }
-        input, select { width: 100%; padding: 11px; margin-top: 5px; font-size: 16px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--input-bg); color: var(--text); }
-        button { width: 100%; border: none; padding: 12px; margin-top: 12px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-whatsapp { background: var(--whatsapp); color: white; }
-        .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 6px 10px; margin-top: 0; font-size: 13px; width: auto; }
-        .result { margin-top: 15px; padding: 12px; background: var(--result-bg); border-radius: 6px; }
-        .result p { margin: 6px 0; font-size: 15px; }
-        .item-row { background: var(--result-bg); border-radius: 8px; padding: 10px 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .item-info { font-size: 14px; line-height: 1.4; }
-        .item-info b { font-size: 15px; }
-        .grand-total { font-size: 18px; text-align: center; margin-top: 10px; padding: 12px; background: var(--primary); color: white; border-radius: 8px; }
-        .hist-entry { border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 10px; }
-        .hist-entry .row { display: flex; justify-content: space-between; align-items: center; }
-        .hist-buttons { display: flex; gap: 8px; margin-top: 8px; }
-        .hist-buttons button { margin-top: 0; padding: 8px; font-size: 13px; }
-        .empty-msg { color: var(--muted); text-align: center; font-size: 14px; padding: 10px 0; }
-        .two-col { display: flex; gap: 10px; }
-        .two-col > div { flex: 1; }
-        .tab-bar { display: flex; gap: 8px; margin-bottom: 15px; }
-        .tab-btn { flex: 1; margin-top: 0; padding: 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); font-size: 15px; }
-        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hardware List Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+      background: #f0f0f0;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .app {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: #111;
+      color: white;
+      padding: 20px 24px;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .header span { font-size: 22px; }
+
+    .header-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      border-radius: 8px;
+      padding: 4px 6px;
+      margin: -4px -6px;
+      transition: background 0.15s;
+    }
+
+    .header-title-wrap:hover { background: rgba(255,255,255,0.1); }
+
+    .header-title-wrap .edit-hint {
+      font-size: 11px;
+      color: #777;
+      opacity: 0;
+      transition: opacity 0.15s;
+      margin-left: 4px;
+    }
+
+    .header-title-wrap:hover .edit-hint { opacity: 1; }
+
+    .header-edit-row {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-edit-row input {
+      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.4);
+      border-radius: 8px;
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 6px 10px;
+      outline: none;
+      width: auto;
+    }
+
+    .header-edit-row input::placeholder { color: rgba(255,255,255,0.4); }
+    .header-edit-row input:focus { border-color: white; }
+
+    .emoji-input { width: 64px !important; text-align: center; font-size: 18px !important; }
+
+    .save-title-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      border-radius: 7px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .save-title-btn:hover { background: rgba(255,255,255,0.35); }
+
+    .header-right {
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .date-label {
+      font-size: 10px;
+      color: #aaa;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .date-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+
+    .input-area {
+      background: white;
+      padding: 20px;
+      border-left: 1px solid #e0e0e0;
+      border-right: 1px solid #e0e0e0;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type="text"], input[type="number"] {
+      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #111;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: #111;
+    }
+
+    input::placeholder { color: #aaa; }
+
+    .add-btn {
+      background: #111;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 20px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.2s;
+      line-height: 1;
+    }
+
+    .add-btn:hover { background: #333; }
+
+    .table-wrap {
+      background: white;
+      border-left: 1px solid #e0e0e0;
+      border-right: 1px solid #e0e0e0;
+      border-bottom: 1px solid #e0e0e0;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+    }
+
+    thead tr {
+      background: #222;
+      color: white;
+    }
+
+    thead th {
+      padding: 11px 14px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+    tbody tr:nth-child(even) { background: #f8f8f8; }
+    tbody tr:nth-child(even):hover { background: #f2f2f2; }
+
+    tbody td {
+      padding: 10px 14px;
+      font-size: 14px;
+      color: #111;
+    }
+
+    td.qty { text-align: center; font-weight: 600; }
+
+    .del-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #bbb;
+      font-size: 16px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+
+    .del-btn:hover { background: #fee; color: #e44; }
+
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .footer {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
+    .action-btn {
+      font-family: 'Inter', sans-serif;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .clear-btn {
+      background: white;
+      color: #666;
+      border: 1.5px solid #ddd;
+    }
+
+    .clear-btn:hover { border-color: #e44; color: #e44; }
+
+    .pdf-btn {
+      background: #111;
+      color: white;
+    }
+
+    .pdf-btn:hover { background: #333; }
+
+    .img-btn {
+      background: #1a6b3a;
+      color: white;
+    }
+
+    .img-btn:hover { background: #227a45; }
+
+    .img-btn.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .count-badge {
+      background: #444;
+      color: white;
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white; padding: 0; }
+      .input-area, .footer, .del-btn { display: none !important; }
+      .header { border-radius: 0; }
+      .table-wrap { border-radius: 0; border: none; }
+      table { font-size: 13px; }
+    }
+  </style>
 </head>
 <body>
-
-<div class="card header-row">
-    <div style="width:38px;"></div>
-    <h2>Box Bar Calculator<small>by VisHArTs</small></h2>
-    <button class="theme-btn" id="themeToggle" onclick="toggleTheme()">🌙</button>
-</div>
-
-<div class="tab-bar">
-    <button class="tab-btn active" id="tabBtnSimple" onclick="switchTab('simple')">Simple</button>
-    <button class="tab-btn" id="tabBtnAdvanced" onclick="switchTab('advanced')">Advanced</button>
-</div>
-
-<!-- SIMPLE TAB -->
-<div class="tab-panel active" id="tabSimple">
-    <div class="card">
-        <label>මුළු දිග (Length):</label>
-        <div class="input-group">
-            <div class="input-box">
-                <input type="number" id="s_feetQty" placeholder="අඩි (e.g. 3)" step="any" oninput="simpleCalculate(true)">
-            </div>
-            <div class="input-box">
-                <input type="number" id="s_inchQty" placeholder="අඟල් (e.g. 6)" step="any" oninput="simpleCalculate(true)">
-            </div>
-        </div>
-
-        <label>එක් බටයක දිග (අඩි):</label>
-        <input type="number" id="s_barLength" value="18" oninput="simpleCalculate(true)">
-
-        <label>එක් බටයක මිල (රු.):</label>
-        <input type="number" id="s_barPrice" placeholder="e.g. 2500" step="any" oninput="simpleCalculate(true)">
-
-        <div class="result" id="s_output" style="display:none;">
-            <p><b>සම්පූර්ණ ප්‍රමාණය:</b> <span id="s_totalFeet"></span> Feet</p>
-            <p><b>මිලදී ගත යුතු බට ගණන:</b> <span id="s_buyBars"></span></p>
-            <p><b>ඉතිරි වන ප්‍රමාණය:</b> <span id="s_remainingFeet"></span> Feet</p>
-            <p id="s_costRow" style="display:none;"><b>මුළු මිල:</b> රු. <span id="s_totalCost"></span></p>
-        </div>
-    </div>
-</div>
-
-<!-- ADVANCED TAB -->
-<div class="tab-panel" id="tabAdvanced">
-
-    <div class="card">
-        <h3>Job විස්තර</h3>
-        <div class="two-col">
-            <div>
-                <label>දිනය:</label>
-                <input type="date" id="jobDate">
-            </div>
-            <div>
-                <label>ස්ථානය:</label>
-                <input type="text" id="jobLocation" placeholder="e.g. Matale site">
-            </div>
-        </div>
+  <div class="app">
+    <div class="header">
+      <!-- Display mode -->
+      <div class="header-title-wrap" id="title-display" onclick="startEditTitle()" title="Click to edit">
+        <span id="title-emoji">🔧</span>
+        <h1 id="title-text">Hardware Order List <span class="count-badge" id="count">0</span></h1>
+        <span class="edit-hint">✏️</span>
+      </div>
+      <!-- Edit mode -->
+      <div class="header-edit-row" id="title-edit">
+        <input class="emoji-input" id="edit-emoji" type="text" maxlength="4" placeholder="🔧" />
+        <input id="edit-title" type="text" placeholder="Hardware Order List" />
+        <button class="save-title-btn" onclick="saveTitle()">✓ Save</button>
+      </div>
+      <div class="header-right">
+        <div class="date-label">Date</div>
+        <div class="date-value" id="today-date"></div>
+      </div>
     </div>
 
-    <div class="card">
-        <h3>අයිතමය එකතු කරන්න</h3>
-
-        <label>Box Bar Size:</label>
-        <select id="barType" onchange="handleSizeChange()">
-            <option value="1&quot; x 1&quot;" data-len="20">1" x 1"</option>
-            <option value="1&quot; x 1.5&quot;" data-len="20">1" x 1.5"</option>
-            <option value="1&quot; x 2&quot;" data-len="20">1" x 2"</option>
-            <option value="1.5&quot; x 1.5&quot;" data-len="20">1.5" x 1.5"</option>
-            <option value="2&quot; x 2&quot;" data-len="20">2" x 2"</option>
-            <option value="2&quot; x 1&quot;" data-len="20">2" x 1"</option>
-            <option value="2&quot; x 3&quot;" data-len="20">2" x 3"</option>
-            <option value="2&quot; x 4&quot;" data-len="20">2" x 4"</option>
-            <option value="3&quot; x 3&quot;" data-len="20">3" x 3"</option>
-            <option value="__add_new__" data-len="20">+ අලුත් size එකක් Add කරන්න</option>
-        </select>
-
-        <label>මුළු දිග (Length):</label>
-        <div class="input-group">
-            <div class="input-box">
-                <input type="number" id="feetQty" placeholder="අඩි (e.g. 3)" step="any" oninput="livePreview()">
-            </div>
-            <div class="input-box">
-                <input type="number" id="inchQty" placeholder="අඟල් (e.g. 6)" step="any" oninput="livePreview()">
-            </div>
-        </div>
-
-        <label>එක් බටයක දිග (අඩි):</label>
-        <input type="number" id="barLength" value="20" oninput="livePreview()">
-
-        <label>Waste % (cutting loss):</label>
-        <input type="number" id="wastePct" value="0" step="any" placeholder="e.g. 3" oninput="livePreview()">
-
-        <label>එක් බටයක මිල (රු.):</label>
-        <input type="number" id="barPrice" placeholder="e.g. 2500" step="any" oninput="livePreview()">
-
-        <div class="result" id="livePreviewBox" style="display:none; margin-top:12px;"></div>
-
-        <button class="btn-primary" onclick="addItem()">+ අයිතමය එකතු කරන්න</button>
+    <div class="input-area">
+      <div class="input-row">
+        <input type="text" id="item" placeholder="Item (e.g. වඩිම්බු)" />
+        <input type="number" id="qty" placeholder="Qty" min="1" />
+        <input type="text" id="details" placeholder="Details (optional)" />
+        <button class="add-btn" onclick="addItem()" title="Add">+</button>
+      </div>
     </div>
 
-    <div class="card" id="itemsCard" style="display:none;">
-        <h3>අයිතම ලැයිස්තුව</h3>
-        <div id="itemsList"></div>
-        <div class="grand-total" id="grandTotal"></div>
-        <button class="btn-whatsapp" onclick="shareWhatsapp()">📱 WhatsApp වලින් Share කරන්න</button>
-        <button class="btn-primary" onclick="saveToHistory()">💾 History එකට Save කරන්න</button>
-        <button class="btn-secondary" onclick="clearItems()">🗑 අලුතින් පටන් ගන්න</button>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>Details</th>
+            <th style="text-align:center">Qty</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="list-body">
+          <tr><td colspan="5" class="empty">Items නෑ. ඉහළින් add කරන්න 👆</td></tr>
+        </tbody>
+      </table>
     </div>
 
-    <div class="card">
-        <h3>History</h3>
-        <div id="historyList"><p class="empty-msg">Saved quotations නෑ තාම</p></div>
+    <div class="footer">
+      <button class="action-btn clear-btn" onclick="clearAll()">🗑 Clear All</button>
+      <button class="action-btn img-btn" id="img-save-btn" onclick="saveAsImage()">🖼 Save as Image</button>
+      <button class="action-btn pdf-btn" onclick="printPDF()">🖨 Print / PDF</button>
     </div>
+  </div>
 
-</div>
+  <script>
+    let items = [
+      { item: "Side Flashing", qty: 9, details: "" },
+      { item: "වඩිම්බු", qty: 10, details: "" },
+      { item: "Gutter", qty: 1, details: "" },
+      { item: "End Cap L/R", qty: 6, details: "L3 / R3" },
+      { item: "Nossel", qty: 3, details: "" },
+      { item: "Rivets", qty: 200, details: '1" × ½" — Same colour' },
+      { item: "Silicon Small Tube", qty: 1, details: "" },
+      { item: "Gutter Brackets", qty: 4, details: "nut and bolt 8" },
+      { item: "Jaguar ඇන", qty: 30, details: "" },
+    ];
 
-<script>
-let items = [];
+    function render() {
+      const tbody = document.getElementById('list-body');
+      document.getElementById('count').textContent = items.length;
 
-function switchTab(tab) {
-    document.getElementById('tabSimple').classList.toggle('active', tab === 'simple');
-    document.getElementById('tabAdvanced').classList.toggle('active', tab === 'advanced');
-    document.getElementById('tabBtnSimple').classList.toggle('active', tab === 'simple');
-    document.getElementById('tabBtnAdvanced').classList.toggle('active', tab === 'advanced');
-    localStorage.setItem('boxbar_last_tab', tab);
-}
-
-function computeItem(feet, inches, barLen, wastePct, barPrice, type) {
-    let totalInchesInput = (feet * 12) + inches;
-    let totalFeet = totalInchesInput / 12;
-    let totalFeetWithWaste = totalFeet * (1 + (wastePct / 100));
-    let barFraction = totalFeetWithWaste / barLen;
-    let buyBars = Math.ceil(barFraction);
-    let remainingFeet = (buyBars * barLen) - totalFeetWithWaste;
-    let cost = buyBars * barPrice;
-    return { type, totalFeet, totalFeetWithWaste, barLen, buyBars, remainingFeet, barPrice, cost };
-}
-
-/* ---------- SIMPLE TAB ---------- */
-function simpleCalculate(silent) {
-    let feet = parseFloat(document.getElementById('s_feetQty').value) || 0;
-    let inches = parseFloat(document.getElementById('s_inchQty').value) || 0;
-    let barLen = parseFloat(document.getElementById('s_barLength').value) || 20;
-    let barPrice = parseFloat(document.getElementById('s_barPrice').value) || 0;
-
-    if ((feet + inches) <= 0) {
-        document.getElementById('s_output').style.display = 'none';
-        if (!silent) alert("කරුණාකර අඩි හෝ අඟල් ගණන ඇතුළත් කරන්න.");
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">Items නෑ. ඉහළින් add කරන්න 👆</td></tr>';
         return;
+      }
+
+      tbody.innerHTML = items.map((it, i) => `
+        <tr>
+          <td style="color:#aaa;font-size:12px">${i + 1}</td>
+          <td>${it.item}</td>
+          <td style="color:#555">${it.details}</td>
+          <td class="qty">${it.qty}</td>
+          <td><button class="del-btn" onclick="deleteItem(${i})" title="Delete">✕</button></td>
+        </tr>
+      `).join('');
     }
 
-    let r = computeItem(feet, inches, barLen, 0, barPrice, '');
+    function addItem() {
+      const item = document.getElementById('item').value.trim();
+      const qty = parseInt(document.getElementById('qty').value) || 1;
+      const details = document.getElementById('details').value.trim();
 
-    document.getElementById('s_totalFeet').innerText = r.totalFeet.toFixed(2);
-    document.getElementById('s_buyBars').innerText = r.buyBars + " ක් (අඩි " + (r.buyBars * barLen) + ")";
-    document.getElementById('s_remainingFeet').innerText = r.remainingFeet.toFixed(2);
+      if (!item) {
+        document.getElementById('item').focus();
+        return;
+      }
 
-    if (barPrice > 0) {
-        document.getElementById('s_totalCost').innerText = r.cost.toLocaleString('en-LK');
-        document.getElementById('s_costRow').style.display = 'block';
-    } else {
-        document.getElementById('s_costRow').style.display = 'none';
+      items.push({ item, qty, details });
+      document.getElementById('item').value = '';
+      document.getElementById('qty').value = '';
+      document.getElementById('details').value = '';
+      document.getElementById('item').focus();
+      render();
     }
 
-    document.getElementById('s_output').style.display = 'block';
-}
+    function deleteItem(i) {
+      items.splice(i, 1);
+      render();
+    }
 
-/* ---------- ADVANCED TAB ---------- */
-function applyPreset() {
-    let sel = document.getElementById('barType');
-    let len = sel.options[sel.selectedIndex].getAttribute('data-len');
-    document.getElementById('barLength').value = len;
-}
+    function clearAll() {
+      if (items.length === 0) return;
+      if (confirm('සියලුම items delete කරන්නද?')) {
+        items = [];
+        render();
+      }
+    }
 
-function handleSizeChange() {
-    let sel = document.getElementById('barType');
-    if (sel.value === '__add_new__') {
-        let newSize = prompt("අලුත් size එක type කරන්න (e.g. 1.5\" x 2\"):");
-        if (newSize && newSize.trim()) {
-            addCustomSize(newSize.trim());
-            sel.value = newSize.trim();
+    function printPDF() {
+      window.print();
+    }
+
+    async function saveAsImage() {
+      const btn = document.getElementById('img-save-btn');
+      btn.classList.add('loading');
+      btn.textContent = '⏳ Generating...';
+
+      // A4 at 96dpi = 794 × 1123 px
+      const A4_W = 794;
+      const A4_H = 1123;
+
+      // Build a clean off-screen container styled like A4
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = `
+        position: fixed; left: -9999px; top: 0;
+        width: ${A4_W}px; min-height: ${A4_H}px;
+        background: #ffffff;
+        font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+        padding: 40px;
+        box-sizing: border-box;
+      `;
+
+      // Clone just the app card (header + table)
+      const appEl = document.querySelector('.app');
+      const clone = appEl.cloneNode(true);
+
+      // Remove edit UI, input area, footer, delete buttons from clone
+      clone.querySelectorAll('.input-area, .footer, .del-btn, #title-edit, .edit-hint').forEach(el => el.remove());
+
+      // Show title display in case edit mode was open
+      const td = clone.querySelector('#title-display');
+      if (td) td.style.display = 'flex';
+
+      clone.style.cssText = 'max-width:100%; margin:0;';
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      try {
+        const canvas = await html2canvas(wrapper, {
+          width: A4_W,
+          height: Math.max(A4_H, wrapper.scrollHeight + 80),
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false
+        });
+
+        // Crop/pad to exact A4 if shorter
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = A4_W * 2;
+        finalCanvas.height = A4_H * 2;
+        const ctx = finalCanvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+        ctx.drawImage(canvas, 0, 0);
+
+        const link = document.createElement('a');
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10);
+        link.download = `hardware-order-${dateStr}.png`;
+        link.href = finalCanvas.toDataURL('image/png');
+        link.click();
+      } finally {
+        document.body.removeChild(wrapper);
+        btn.classList.remove('loading');
+        btn.innerHTML = '🖼 Save as Image';
+      }
+    }
+
+    let titleText = 'Hardware Order List';
+    let titleEmoji = '🔧';
+
+    function startEditTitle() {
+      document.getElementById('title-display').style.display = 'none';
+      document.getElementById('title-edit').style.display = 'flex';
+      document.getElementById('edit-emoji').value = titleEmoji;
+      document.getElementById('edit-title').value = titleText;
+      document.getElementById('edit-title').focus();
+    }
+
+    function saveTitle() {
+      const newEmoji = document.getElementById('edit-emoji').value.trim() || '🔧';
+      const newTitle = document.getElementById('edit-title').value.trim() || 'Hardware Order List';
+      titleEmoji = newEmoji;
+      titleText = newTitle;
+      document.getElementById('title-emoji').textContent = newEmoji;
+      document.getElementById('title-text').innerHTML = newTitle + ' <span class="count-badge" id="count">' + items.length + '</span>';
+      document.getElementById('title-edit').style.display = 'none';
+      document.getElementById('title-display').style.display = 'flex';
+    }
+
+    // Allow Enter to save title
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && document.getElementById('title-edit').style.display === 'flex') {
+        saveTitle();
+        return;
+      }
+      if (e.key === 'Enter') {
+        if (document.getElementById('title-edit').style.display === 'flex') {
+          saveTitle();
         } else {
-            sel.selectedIndex = 0;
+          addItem();
         }
-    }
-    applyPreset();
-    livePreview();
-}
-
-function livePreview() {
-    let feet = parseFloat(document.getElementById('feetQty').value) || 0;
-    let inches = parseFloat(document.getElementById('inchQty').value) || 0;
-    let barLen = parseFloat(document.getElementById('barLength').value) || 20;
-    let wastePct = parseFloat(document.getElementById('wastePct').value) || 0;
-    let barPrice = parseFloat(document.getElementById('barPrice').value) || 0;
-    let box = document.getElementById('livePreviewBox');
-
-    if ((feet + inches) <= 0) {
-        box.style.display = 'none';
-        return;
-    }
-
-    let r = computeItem(feet, inches, barLen, wastePct, barPrice, '');
-    box.style.display = 'block';
-    box.innerHTML = `<p><b>බට ගණන:</b> ${r.buyBars} (අඩි ${r.buyBars * barLen})</p>
-        <p><b>ඉතිරි:</b> ${r.remainingFeet.toFixed(2)} අඩි</p>
-        ${barPrice > 0 ? `<p><b>මිල:</b> රු. ${r.cost.toLocaleString('en-LK')}</p>` : ''}`;
-}
-
-function addCustomSize(sizeLabel) {
-    let sizes = JSON.parse(localStorage.getItem('boxbar_custom_sizes') || '[]');
-    if (!sizes.includes(sizeLabel)) {
-        sizes.push(sizeLabel);
-        localStorage.setItem('boxbar_custom_sizes', JSON.stringify(sizes));
-    }
-    insertSizeOption(sizeLabel);
-}
-
-function insertSizeOption(sizeLabel) {
-    let sel = document.getElementById('barType');
-    let exists = Array.from(sel.options).some(o => o.value === sizeLabel);
-    if (exists) return;
-    let opt = document.createElement('option');
-    opt.value = sizeLabel;
-    opt.text = sizeLabel;
-    opt.setAttribute('data-len', '20');
-    let addNewOpt = sel.querySelector('option[value="__add_new__"]');
-    sel.insertBefore(opt, addNewOpt);
-}
-
-function loadCustomSizes() {
-    let sizes = JSON.parse(localStorage.getItem('boxbar_custom_sizes') || '[]');
-    sizes.forEach(s => insertSizeOption(s));
-}
-
-function addItem() {
-    let feet = parseFloat(document.getElementById('feetQty').value) || 0;
-    let inches = parseFloat(document.getElementById('inchQty').value) || 0;
-    let barLen = parseFloat(document.getElementById('barLength').value) || 20;
-    let wastePct = parseFloat(document.getElementById('wastePct').value) || 0;
-    let barPrice = parseFloat(document.getElementById('barPrice').value) || 0;
-    let type = document.getElementById('barType').value;
-
-    if ((feet + inches) <= 0) {
-        alert("කරුණාකර අඩි හෝ අඟල් ගණන ඇතුළත් කරන්න.");
-        return;
-    }
-
-    let result = computeItem(feet, inches, barLen, wastePct, barPrice, type);
-    items.push(result);
-    renderItems();
-
-    document.getElementById('feetQty').value = '';
-    document.getElementById('inchQty').value = '';
-    document.getElementById('barPrice').value = '';
-    document.getElementById('livePreviewBox').style.display = 'none';
-}
-
-function removeItem(idx) {
-    items.splice(idx, 1);
-    renderItems();
-}
-
-function renderItems() {
-    let card = document.getElementById('itemsCard');
-    let list = document.getElementById('itemsList');
-    if (items.length === 0) {
-        card.style.display = 'none';
-        return;
-    }
-    card.style.display = 'block';
-    list.innerHTML = '';
-    let grandBars = 0, grandCost = 0;
-
-    items.forEach((it, idx) => {
-        grandBars += it.buyBars;
-        grandCost += it.cost;
-        let div = document.createElement('div');
-        div.className = 'item-row';
-        div.innerHTML = `
-            <div class="item-info">
-                <b>${it.type}</b><br>
-                දිග: ${it.totalFeet.toFixed(2)} අඩි | බට: ${it.buyBars} (${it.barLen} අඩි)<br>
-                ඉතිරි: ${it.remainingFeet.toFixed(2)} අඩි${it.cost > 0 ? ' | රු. ' + it.cost.toLocaleString('en-LK') : ''}
-            </div>
-            <button class="btn-danger" onclick="removeItem(${idx})">✕</button>
-        `;
-        list.appendChild(div);
+      }
     });
 
-    document.getElementById('grandTotal').innerText =
-        `මුළු බට: ${grandBars} | මුළු මිල: රු. ${grandCost.toLocaleString('en-LK')}`;
-}
-
-function clearItems() {
-    if (items.length && !confirm("සියලුම අයිතම ඉවත් කරන්නද?")) return;
-    items = [];
-    renderItems();
-}
-
-function buildSummaryText() {
-    let date = document.getElementById('jobDate').value || '-';
-    let loc = document.getElementById('jobLocation').value || '-';
-    let lines = [`📋 *${loc}* - ${date}`, ''];
-    let grandBars = 0, grandCost = 0;
-    items.forEach((it, i) => {
-        grandBars += it.buyBars;
-        grandCost += it.cost;
-        lines.push(`${i+1}. ${it.type} - ${it.buyBars} bars (${it.totalFeet.toFixed(1)} අඩි)${it.cost > 0 ? ' - රු.' + it.cost.toLocaleString('en-LK') : ''}`);
-    });
-    lines.push('');
-    lines.push(`------------------`);
-    lines.push(`මුළු බට: ${grandBars}`);
-    lines.push(`මුළු මිල: රු. ${grandCost.toLocaleString('en-LK')}`);
-    return lines.join('\n');
-}
-
-function shareWhatsapp() {
-    if (items.length === 0) { alert("කරුණාකර අයිතමයක් එකතු කරන්න."); return; }
-    let text = buildSummaryText();
-    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
-}
-
-function saveToHistory() {
-    if (items.length === 0) { alert("කරුණාකර අයිතමයක් එකතු කරන්න."); return; }
-    let date = document.getElementById('jobDate').value || new Date().toISOString().slice(0,10);
-    let loc = document.getElementById('jobLocation').value || '-';
-    let grandCost = items.reduce((s, it) => s + it.cost, 0);
-    let grandBars = items.reduce((s, it) => s + it.buyBars, 0);
-
-    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
-    history.unshift({
-        date, loc, items: JSON.parse(JSON.stringify(items)), grandBars, grandCost,
-        savedAt: new Date().toLocaleString()
-    });
-    localStorage.setItem('boxbar_history', JSON.stringify(history));
-    renderHistory();
-    alert("Save කළා ✅");
-}
-
-function renderHistory() {
-    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
-    let container = document.getElementById('historyList');
-    if (history.length === 0) {
-        container.innerHTML = '<p class="empty-msg">Saved quotations නෑ තාම</p>';
-        return;
+    // Show today's date
+    function setDate() {
+      const now = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', options);
     }
-    container.innerHTML = '';
-    history.forEach((h, idx) => {
-        let div = document.createElement('div');
-        div.className = 'hist-entry';
-        div.innerHTML = `
-            <div class="row">
-                <div><b>${h.loc}</b> — ${h.date}</div>
-                <div>රු. ${h.grandCost.toLocaleString('en-LK')}</div>
-            </div>
-            <div class="hist-buttons">
-                <button class="btn-secondary" onclick="loadHistory(${idx})">Load</button>
-                <button class="btn-danger" onclick="deleteHistory(${idx})">Delete</button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-}
 
-function loadHistory(idx) {
-    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
-    let h = history[idx];
-    if (!h) return;
-    document.getElementById('jobDate').value = h.date;
-    document.getElementById('jobLocation').value = h.loc;
-    items = JSON.parse(JSON.stringify(h.items));
-    renderItems();
-    window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-function deleteHistory(idx) {
-    if (!confirm("මේ record එක delete කරන්නද?")) return;
-    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
-    history.splice(idx, 1);
-    localStorage.setItem('boxbar_history', JSON.stringify(history));
-    renderHistory();
-}
-
-/* ---------- SHARED ---------- */
-function toggleTheme() {
-    let isDark = document.body.classList.toggle('dark');
-    localStorage.setItem('boxbar_theme', isDark ? 'dark' : 'light');
-    document.getElementById('themeToggle').innerText = isDark ? '☀️' : '🌙';
-}
-
-function initTheme() {
-    let saved = localStorage.getItem('boxbar_theme');
-    if (saved === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('themeToggle').innerText = '☀️';
-    }
-}
-
-initTheme();
-renderHistory();
-loadCustomSizes();
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js').catch(() => {});
-    });
-}
-</script>
-
+    setDate();
+    render();
+  </script>
 </body>
 </html>
