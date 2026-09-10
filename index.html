@@ -1,317 +1,651 @@
 <!DOCTYPE html>
 <html lang="si">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hardware List Builder</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>List Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js"></script>
+<style>
+  :root{
+    --steel:#23262b;
+    --steel-2:#2f333a;
+    --rivet:#c9962f;
+    --rivet-dim:#8a6a24;
+    --paper:#f3efe4;
+    --paper-line:#d8d0ba;
+    --ink:#1f3a8f;
+    --ink-soft:#3a4f9c;
+    --text-dim:#a9adb4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--steel);
+    font-family:'Inter','Noto Sans Sinhala',sans-serif;
+    min-height:100vh;
+    padding:20px 16px 44px;
+    color:#e7e7e5;
+  }
 
-    body {
-      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
-      background: #f0f0f0;
-      min-height: 100vh;
-      padding: 24px 16px;
-    }
+  /* ---- shared tab bar ---- */
+  .tabs{
+    max-width:920px;
+    margin:0 auto 16px;
+    display:flex;
+    gap:8px;
+  }
+  .tab-btn{
+    flex:1;
+    background:var(--steel-2);
+    border:1px solid #3c414a;
+    color:#c7cbd1;
+    padding:12px 10px;
+    border-radius:8px;
+    font-size:0.88rem;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+    transition:background 0.15s, color 0.15s;
+  }
+  .tab-btn.active{
+    background:var(--rivet);
+    color:#1b1508;
+    border-color:var(--rivet);
+  }
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
 
-    .app {
-      max-width: 700px;
-      margin: 0 auto;
-    }
+  /* ===================================================== */
+  /* ILM SCOPE — Item List Maker                            */
+  /* ===================================================== */
+  .ilm-scope .wrap{max-width:920px;margin:0 auto;}
+  .ilm-scope h1{
+    font-family:Georgia,'Times New Roman',serif;
+    font-weight:700;
+    font-size:1.5rem;
+    letter-spacing:0.3px;
+    margin:0 0 4px;
+    color:#f0ece0;
+  }
+  .ilm-scope .sub{
+    color:var(--text-dim);
+    font-size:0.85rem;
+    margin-bottom:20px;
+  }
+  .ilm-scope .panel{
+    background:var(--steel-2);
+    border:1px solid #3c414a;
+    border-radius:6px;
+    padding:16px;
+    margin-bottom:18px;
+  }
+  .ilm-scope .field-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:12px;
+  }
+  .ilm-scope .field{flex:1;}
+  .ilm-scope label{
+    display:block;
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--text-dim);
+    margin-bottom:5px;
+  }
+  .ilm-scope input[type=text], .ilm-scope input[type=date]{
+    width:100%;
+    background:#1b1d21;
+    border:1px solid #444a54;
+    color:#f0ece0;
+    padding:9px 10px;
+    border-radius:4px;
+    font-size:0.95rem;
+    font-family:inherit;
+  }
+  .ilm-scope input:focus{outline:2px solid var(--rivet); outline-offset:1px;}
+  .ilm-scope .item-row{
+    display:grid;
+    grid-template-columns:1fr 90px 32px;
+    gap:8px;
+    margin-bottom:8px;
+    align-items:center;
+  }
+  .ilm-scope .item-row input{width:100%;}
+  .ilm-scope .rm-btn{
+    background:none;
+    border:1px solid #4a4f58;
+    color:#c4c8ce;
+    width:32px;
+    height:36px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:1rem;
+    line-height:1;
+  }
+  .ilm-scope .rm-btn:hover{border-color:#b33; color:#e88;}
+  .ilm-scope .photo-box{
+    border:1px dashed #4a4f58;
+    border-radius:5px;
+    padding:12px;
+    margin-bottom:16px;
+  }
+  .ilm-scope .photo-box label{margin-bottom:8px;}
+  .ilm-scope input[type=file]{
+    color:var(--text-dim);
+    font-size:0.82rem;
+    width:100%;
+  }
+  .ilm-scope input[type=file]::file-selector-button{
+    background:var(--steel);
+    color:#e7e7e5;
+    border:1px solid #4a4f58;
+    border-radius:4px;
+    padding:7px 12px;
+    margin-right:10px;
+    cursor:pointer;
+  }
+  .ilm-scope .ocr-status{
+    font-size:0.8rem;
+    color:var(--rivet);
+    margin-top:8px;
+    min-height:1.1em;
+  }
+  .ilm-scope .ocr-status.err{color:#e88;}
+  .ilm-scope .row-actions{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+  }
+  .ilm-scope button.add{
+    background:none;
+    border:1px dashed #5a606a;
+    color:#cfd3d9;
+    padding:9px 14px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:0.85rem;
+    font-family:inherit;
+  }
+  .ilm-scope button.add:hover{border-color:var(--rivet); color:var(--rivet);}
+  .ilm-scope button.generate{
+    display:block;
+    width:100%;
+    background:var(--rivet);
+    color:#1b1508;
+    border:none;
+    padding:13px;
+    border-radius:5px;
+    font-weight:700;
+    font-size:0.95rem;
+    letter-spacing:0.02em;
+    cursor:pointer;
+    margin-top:4px;
+    font-family:inherit;
+  }
+  .ilm-scope button.generate:hover{background:#dcab3d;}
+  .ilm-scope button.generate:active{transform:translateY(1px);}
+  .ilm-scope #previewHolder{
+    background:#141518;
+    border-radius:6px;
+    padding:22px 10px;
+    display:flex;
+    justify-content:center;
+  }
+  .ilm-scope #paper{
+    width:100%;
+    max-width:560px;
+    background:var(--paper);
+    background-image:repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 43px,
+      var(--paper-line) 44px
+    );
+    background-position: 0 78px;
+    padding:26px 26px 30px;
+    border-radius:2px;
+    box-shadow:0 6px 22px rgba(0,0,0,0.45);
+    position:relative;
+  }
+  .ilm-scope #paper::before{
+    content:"";
+    position:absolute;
+    top:0; left:36px;
+    width:14px; height:14px;
+    background:var(--rivet-dim);
+    border-radius:50%;
+    box-shadow: 500px 0 0 0 var(--rivet-dim);
+    transform:translateY(-7px);
+  }
+  .ilm-scope .p-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:8px;
+    margin-bottom:16px;
+    gap:10px;
+  }
+  .ilm-scope .p-title{
+    font-family:Georgia,'Times New Roman',serif;
+    font-weight:700;
+    color:var(--ink);
+    font-size:1.15rem;
+    word-break:break-word;
+  }
+  .ilm-scope .p-date{
+    font-family:Georgia,'Times New Roman',serif;
+    font-weight:700;
+    color:var(--ink);
+    font-size:1.05rem;
+    white-space:nowrap;
+  }
+  .ilm-scope .p-item{
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    color:var(--ink-soft);
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:1.02rem;
+    padding:9px 0;
+  }
+  .ilm-scope .p-item .num{color:var(--ink); font-weight:700; margin-right:6px;}
+  .ilm-scope .p-item .name{flex:1;}
+  .ilm-scope .p-item .qty{white-space:nowrap; font-weight:700; color:var(--ink);}
+  .ilm-scope .p-empty{
+    color:#9b9377;
+    font-style:italic;
+    font-family:Georgia,serif;
+    padding:20px 0;
+    text-align:center;
+  }
+  @media (max-width:520px){
+    .ilm-scope .field-row{flex-direction:column; gap:8px;}
+    .ilm-scope .item-row{grid-template-columns:1fr 74px 30px;}
+  }
 
-    .header {
-      background: #111;
-      color: white;
-      padding: 20px 24px;
-      border-radius: 12px 12px 0 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+  /* ===================================================== */
+  /* HW SCOPE — Hardware Order List                         */
+  /* ===================================================== */
+  .hw-scope{
+    background:#f0f0f0;
+    border-radius:10px;
+    padding:24px 16px;
+  }
+  .hw-scope .app{ max-width:700px; margin:0 auto; }
+  .hw-scope .header{
+    background:#111;
+    color:white;
+    padding:20px 24px;
+    border-radius:12px 12px 0 0;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .hw-scope .header h1{ font-size:18px; font-weight:700; letter-spacing:0.5px; }
+  .hw-scope .header span{ font-size:22px; }
+  .hw-scope .header-title-wrap{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+    border-radius:8px;
+    padding:4px 6px;
+    margin:-4px -6px;
+    transition:background 0.15s;
+  }
+  .hw-scope .header-title-wrap:hover{ background:rgba(255,255,255,0.1); }
+  .hw-scope .header-title-wrap .edit-hint{
+    font-size:11px; color:#777; opacity:0; transition:opacity 0.15s; margin-left:4px;
+  }
+  .hw-scope .header-title-wrap:hover .edit-hint{ opacity:1; }
+  .hw-scope .header-edit-row{ display:none; align-items:center; gap:8px; }
+  .hw-scope .header-edit-row input{
+    font-family:'Inter','Noto Sans Sinhala',sans-serif;
+    background:rgba(255,255,255,0.15);
+    border:1.5px solid rgba(255,255,255,0.4);
+    border-radius:8px;
+    color:white;
+    font-size:15px;
+    font-weight:700;
+    padding:6px 10px;
+    outline:none;
+    width:auto;
+  }
+  .hw-scope .header-edit-row input::placeholder{ color:rgba(255,255,255,0.4); }
+  .hw-scope .header-edit-row input:focus{ border-color:white; }
+  .hw-scope .emoji-input{ width:64px !important; text-align:center; font-size:18px !important; }
+  .hw-scope .save-title-btn{
+    background:rgba(255,255,255,0.2);
+    border:none; color:white; border-radius:7px;
+    padding:6px 12px; font-size:13px; font-weight:600;
+    cursor:pointer; transition:background 0.15s;
+    font-family:inherit;
+  }
+  .hw-scope .save-title-btn:hover{ background:rgba(255,255,255,0.35); }
+  .hw-scope .header-right{ margin-left:auto; text-align:right; }
+  .hw-scope .date-label{
+    font-size:10px; color:#aaa; letter-spacing:0.8px;
+    text-transform:uppercase; margin-bottom:2px;
+  }
+  .hw-scope .date-value{ font-size:14px; font-weight:600; color:#fff; letter-spacing:0.3px; }
+  .hw-scope .input-area{
+    background:white; padding:20px;
+    border-left:1px solid #e0e0e0; border-right:1px solid #e0e0e0;
+  }
+  .hw-scope .input-row{
+    display:grid; grid-template-columns:1fr 80px 1fr auto;
+    gap:8px; align-items:center;
+  }
+  .hw-scope input[type="text"], .hw-scope input[type="number"]{
+    font-family:'Inter','Noto Sans Sinhala',sans-serif;
+    border:1.5px solid #ddd; border-radius:8px;
+    padding:10px 12px; font-size:14px; color:#111;
+    outline:none; transition:border-color 0.2s; width:100%;
+  }
+  .hw-scope input[type="text"]:focus, .hw-scope input[type="number"]:focus{ border-color:#111; }
+  .hw-scope input::placeholder{ color:#aaa; }
+  .hw-scope .add-btn{
+    background:#111; color:white; border:none; border-radius:8px;
+    padding:10px 16px; font-size:20px; cursor:pointer;
+    font-weight:700; transition:background 0.2s; line-height:1;
+  }
+  .hw-scope .add-btn:hover{ background:#333; }
+  .hw-scope .table-wrap{
+    background:white;
+    border-left:1px solid #e0e0e0; border-right:1px solid #e0e0e0; border-bottom:1px solid #e0e0e0;
+    border-radius:0 0 12px 12px; overflow:hidden;
+  }
+  .hw-scope table{ width:100%; border-collapse:collapse; font-family:'Inter','Noto Sans Sinhala',sans-serif; }
+  .hw-scope thead tr{ background:#222; color:white; }
+  .hw-scope thead th{
+    padding:11px 14px; text-align:left; font-size:12px;
+    font-weight:600; letter-spacing:0.8px; text-transform:uppercase;
+  }
+  .hw-scope tbody tr{ border-bottom:1px solid #f0f0f0; transition:background 0.15s; }
+  .hw-scope tbody tr:last-child{ border-bottom:none; }
+  .hw-scope tbody tr:hover{ background:#fafafa; }
+  .hw-scope tbody tr:nth-child(even){ background:#f8f8f8; }
+  .hw-scope tbody tr:nth-child(even):hover{ background:#f2f2f2; }
+  .hw-scope tbody td{ padding:10px 14px; font-size:14px; color:#111; }
+  .hw-scope td.qty{ text-align:center; font-weight:600; }
+  .hw-scope .del-btn{
+    background:none; border:none; cursor:pointer; color:#bbb;
+    font-size:16px; padding:4px 8px; border-radius:6px; transition:all 0.15s;
+  }
+  .hw-scope .del-btn:hover{ background:#fee; color:#e44; }
+  .hw-scope .empty{ text-align:center; padding:40px 20px; color:#aaa; font-size:14px; }
+  .hw-scope .footer{ display:flex; gap:10px; margin-top:16px; justify-content:flex-end; }
+  .hw-scope .action-btn{
+    font-family:'Inter',sans-serif; border:none; border-radius:8px;
+    padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;
+    transition:all 0.2s; display:flex; align-items:center; gap:6px;
+  }
+  .hw-scope .clear-btn{ background:white; color:#666; border:1.5px solid #ddd; }
+  .hw-scope .clear-btn:hover{ border-color:#e44; color:#e44; }
+  .hw-scope .pdf-btn{ background:#111; color:white; }
+  .hw-scope .pdf-btn:hover{ background:#333; }
+  .hw-scope .img-btn{ background:#1a6b3a; color:white; }
+  .hw-scope .img-btn:hover{ background:#227a45; }
+  .hw-scope .img-btn.loading{ opacity:0.7; pointer-events:none; }
+  .hw-scope .count-badge{
+    background:#444; color:white; border-radius:20px;
+    padding:2px 8px; font-size:12px; font-weight:600; margin-left:8px;
+  }
 
-    .header h1 {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
+  /* ===================================================== */
+  /* BBC SCOPE — Box Bar Calculator (full recovered app)     */
+  /* ===================================================== */
+  .bbc-scope{
+    --bbc-bg:#f4f4f9; --bbc-card:#ffffff; --bbc-text:#333333; --bbc-muted:#888888;
+    --bbc-border:#cccccc; --bbc-input-bg:#ffffff; --bbc-result-bg:#e9ecef;
+    --bbc-primary:#007bff; --bbc-danger:#dc3545; --bbc-whatsapp:#25D366;
+    background:var(--bbc-bg);
+    border-radius:10px;
+    padding:16px;
+  }
+  .bbc-scope.bbc-dark{
+    --bbc-bg:#121212; --bbc-card:#1e1e1e; --bbc-text:#f0f0f0; --bbc-muted:#aaaaaa;
+    --bbc-border:#444444; --bbc-input-bg:#2a2a2a; --bbc-result-bg:#2a2a2a;
+  }
+  .bbc-scope .bbc-app{ max-width:420px; margin:0 auto; color:var(--bbc-text); }
+  .bbc-scope .bbc-card{ background:var(--bbc-card); padding:18px; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-bottom:15px; }
+  .bbc-scope .bbc-header-row{ display:flex; justify-content:space-between; align-items:center; }
+  .bbc-scope h2{ text-align:center; color:var(--bbc-text); margin:0; flex:1; }
+  .bbc-scope h2 small{ display:block; font-size:12px; font-weight:normal; color:var(--bbc-muted); margin-top:4px; }
+  .bbc-scope h3{ margin-top:0; color:var(--bbc-text); font-size:16px; }
+  .bbc-scope .bbc-theme-btn{ background:none; border:1px solid var(--bbc-border); color:var(--bbc-text); border-radius:50%; width:38px; height:38px; font-size:16px; cursor:pointer; flex-shrink:0; }
+  .bbc-scope label{ font-weight:bold; display:block; margin-top:12px; font-size:14px; color:var(--bbc-text); }
+  .bbc-scope .input-group{ display:flex; gap:10px; }
+  .bbc-scope .input-box{ flex:1; }
+  .bbc-scope input, .bbc-scope select{
+    width:100%; padding:11px; margin-top:5px; font-size:16px;
+    border:1px solid var(--bbc-border); border-radius:6px; box-sizing:border-box;
+    background:var(--bbc-input-bg); color:var(--bbc-text);
+    font-family:'Inter','Noto Sans Sinhala',sans-serif;
+  }
+  .bbc-scope button{ width:100%; border:none; padding:12px; margin-top:12px; font-size:16px; border-radius:6px; cursor:pointer; font-weight:bold; font-family:inherit; }
+  .bbc-scope .bbc-btn-primary{ background:var(--bbc-primary); color:white; }
+  .bbc-scope .bbc-btn-whatsapp{ background:var(--bbc-whatsapp); color:white; }
+  .bbc-scope .bbc-btn-secondary{ background:transparent; border:1px solid var(--bbc-border); color:var(--bbc-text); }
+  .bbc-scope .bbc-btn-danger{ background:transparent; color:var(--bbc-danger); border:1px solid var(--bbc-danger); padding:6px 10px; margin-top:0; font-size:13px; width:auto; }
+  .bbc-scope .result{ margin-top:15px; padding:12px; background:var(--bbc-result-bg); border-radius:6px; }
+  .bbc-scope .result p{ margin:6px 0; font-size:15px; color:var(--bbc-text); }
+  .bbc-scope .bbc-item-row{ background:var(--bbc-result-bg); border-radius:8px; padding:10px 12px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .bbc-scope .bbc-item-info{ font-size:14px; line-height:1.4; color:var(--bbc-text); }
+  .bbc-scope .bbc-item-info b{ font-size:15px; }
+  .bbc-scope .bbc-grand-total{ font-size:18px; text-align:center; margin-top:10px; padding:12px; background:var(--bbc-primary); color:white; border-radius:8px; }
+  .bbc-scope .bbc-hist-entry{ border:1px solid var(--bbc-border); border-radius:8px; padding:10px; margin-top:10px; }
+  .bbc-scope .bbc-hist-entry .bbc-row{ display:flex; justify-content:space-between; align-items:center; }
+  .bbc-scope .bbc-hist-buttons{ display:flex; gap:8px; margin-top:8px; }
+  .bbc-scope .bbc-hist-buttons button{ margin-top:0; padding:8px; font-size:13px; }
+  .bbc-scope .bbc-empty-msg{ color:var(--bbc-muted); text-align:center; font-size:14px; padding:10px 0; }
+  .bbc-scope .bbc-two-col{ display:flex; gap:10px; }
+  .bbc-scope .bbc-two-col > div{ flex:1; }
+  .bbc-scope .bbc-tab-bar{ display:flex; gap:8px; margin-bottom:15px; }
+  .bbc-scope .bbc-tab-btn{ flex:1; margin-top:0; padding:10px; background:var(--bbc-card); color:var(--bbc-text); border:1px solid var(--bbc-border); font-size:15px; }
+  .bbc-scope .bbc-tab-btn.active{ background:var(--bbc-primary); color:white; border-color:var(--bbc-primary); }
+  .bbc-scope .bbc-tab-panel{ display:none; }
+  .bbc-scope .bbc-tab-panel.active{ display:block; }
 
-    .header span { font-size: 22px; }
-
-    .header-title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      border-radius: 8px;
-      padding: 4px 6px;
-      margin: -4px -6px;
-      transition: background 0.15s;
-    }
-
-    .header-title-wrap:hover { background: rgba(255,255,255,0.1); }
-
-    .header-title-wrap .edit-hint {
-      font-size: 11px;
-      color: #777;
-      opacity: 0;
-      transition: opacity 0.15s;
-      margin-left: 4px;
-    }
-
-    .header-title-wrap:hover .edit-hint { opacity: 1; }
-
-    .header-edit-row {
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .header-edit-row input {
-      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
-      background: rgba(255,255,255,0.15);
-      border: 1.5px solid rgba(255,255,255,0.4);
-      border-radius: 8px;
-      color: white;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 6px 10px;
-      outline: none;
-      width: auto;
-    }
-
-    .header-edit-row input::placeholder { color: rgba(255,255,255,0.4); }
-    .header-edit-row input:focus { border-color: white; }
-
-    .emoji-input { width: 64px !important; text-align: center; font-size: 18px !important; }
-
-    .save-title-btn {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      border-radius: 7px;
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .save-title-btn:hover { background: rgba(255,255,255,0.35); }
-
-    .header-right {
-      margin-left: auto;
-      text-align: right;
-    }
-
-    .date-label {
-      font-size: 10px;
-      color: #aaa;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    .date-value {
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-      letter-spacing: 0.3px;
-    }
-
-    .input-area {
-      background: white;
-      padding: 20px;
-      border-left: 1px solid #e0e0e0;
-      border-right: 1px solid #e0e0e0;
-    }
-
-    .input-row {
-      display: grid;
-      grid-template-columns: 1fr 80px 1fr auto;
-      gap: 8px;
-      align-items: center;
-    }
-
-    input[type="text"], input[type="number"] {
-      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 14px;
-      color: #111;
-      outline: none;
-      transition: border-color 0.2s;
-      width: 100%;
-    }
-
-    input[type="text"]:focus, input[type="number"]:focus {
-      border-color: #111;
-    }
-
-    input::placeholder { color: #aaa; }
-
-    .add-btn {
-      background: #111;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 20px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: background 0.2s;
-      line-height: 1;
-    }
-
-    .add-btn:hover { background: #333; }
-
-    .table-wrap {
-      background: white;
-      border-left: 1px solid #e0e0e0;
-      border-right: 1px solid #e0e0e0;
-      border-bottom: 1px solid #e0e0e0;
-      border-radius: 0 0 12px 12px;
-      overflow: hidden;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
-    }
-
-    thead tr {
-      background: #222;
-      color: white;
-    }
-
-    thead th {
-      padding: 11px 14px;
-      text-align: left;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid #f0f0f0;
-      transition: background 0.15s;
-    }
-
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: #fafafa; }
-    tbody tr:nth-child(even) { background: #f8f8f8; }
-    tbody tr:nth-child(even):hover { background: #f2f2f2; }
-
-    tbody td {
-      padding: 10px 14px;
-      font-size: 14px;
-      color: #111;
-    }
-
-    td.qty { text-align: center; font-weight: 600; }
-
-    .del-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #bbb;
-      font-size: 16px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      transition: all 0.15s;
-    }
-
-    .del-btn:hover { background: #fee; color: #e44; }
-
-    .empty {
-      text-align: center;
-      padding: 40px 20px;
-      color: #aaa;
-      font-size: 14px;
-    }
-
-    .footer {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-      justify-content: flex-end;
-    }
-
-    .action-btn {
-      font-family: 'Inter', sans-serif;
-      border: none;
-      border-radius: 8px;
-      padding: 11px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .clear-btn {
-      background: white;
-      color: #666;
-      border: 1.5px solid #ddd;
-    }
-
-    .clear-btn:hover { border-color: #e44; color: #e44; }
-
-    .pdf-btn {
-      background: #111;
-      color: white;
-    }
-
-    .pdf-btn:hover { background: #333; }
-
-    .img-btn {
-      background: #1a6b3a;
-      color: white;
-    }
-
-    .img-btn:hover { background: #227a45; }
-
-    .img-btn.loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    .count-badge {
-      background: #444;
-      color: white;
-      border-radius: 20px;
-      padding: 2px 8px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-left: 8px;
-    }
-
-    /* Print styles */
-    @media print {
-      body { background: white; padding: 0; }
-      .input-area, .footer, .del-btn { display: none !important; }
-      .header { border-radius: 0; }
-      .table-wrap { border-radius: 0; border: none; }
-      table { font-size: 13px; }
-    }
-  </style>
+  @media print {
+    .tabs{ display:none !important; }
+    body{ background:white; padding:0; }
+    .hw-scope .input-area, .hw-scope .footer, .hw-scope .del-btn{ display:none !important; }
+    .hw-scope .header{ border-radius:0; }
+    .hw-scope .table-wrap{ border-radius:0; border:none; }
+    .hw-scope table{ font-size:13px; }
+    .hw-scope{ background:white; padding:0; }
+  }
+</style>
 </head>
 <body>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tabbtn-bbc" onclick="showTab('bbc')">📦 Box Bar Calculator</button>
+  <button class="tab-btn" id="tabbtn-ilm" onclick="showTab('ilm')">🗒 Item List Maker</button>
+  <button class="tab-btn" id="tabbtn-hw" onclick="showTab('hw')">🔧 Hardware Order List</button>
+</div>
+
+<!-- ================= BBC TAB (Box Bar Calculator, full app) ================= -->
+<div id="tab-bbc" class="tab-panel bbc-scope active">
+  <div class="bbc-app">
+
+    <div class="bbc-card bbc-header-row">
+      <div style="width:38px;"></div>
+      <h2>Box Bar Calculator<small>by VisHArTs</small></h2>
+      <button class="bbc-theme-btn" id="bbcThemeToggle" onclick="bbcToggleTheme()">🌙</button>
+    </div>
+
+    <div class="bbc-tab-bar">
+      <button class="bbc-tab-btn active" id="bbcTabBtnSimple" onclick="bbcSwitchTab('simple')">Simple</button>
+      <button class="bbc-tab-btn" id="bbcTabBtnAdvanced" onclick="bbcSwitchTab('advanced')">Advanced</button>
+    </div>
+
+    <!-- SIMPLE TAB -->
+    <div class="bbc-tab-panel active" id="bbcTabSimple">
+      <div class="bbc-card">
+        <label>මුළු දිග (Length):</label>
+        <div class="input-group">
+          <div class="input-box">
+            <input type="number" id="bbc_s_feetQty" placeholder="අඩි (e.g. 3)" step="any" oninput="bbcSimpleCalculate(true)">
+          </div>
+          <div class="input-box">
+            <input type="number" id="bbc_s_inchQty" placeholder="අඟල් (e.g. 6)" step="any" oninput="bbcSimpleCalculate(true)">
+          </div>
+        </div>
+
+        <label>එක් බටයක දිග (අඩි):</label>
+        <input type="number" id="bbc_s_barLength" value="18" oninput="bbcSimpleCalculate(true)">
+
+        <label>එක් බටයක මිල (රු.):</label>
+        <input type="number" id="bbc_s_barPrice" placeholder="e.g. 2500" step="any" oninput="bbcSimpleCalculate(true)">
+
+        <div class="result" id="bbc_s_output" style="display:none;">
+          <p><b>සම්පූර්ණ ප්‍රමාණය:</b> <span id="bbc_s_totalFeet"></span> Feet</p>
+          <p><b>මිලදී ගත යුතු බට ගණන:</b> <span id="bbc_s_buyBars"></span></p>
+          <p><b>ඉතිරි වන ප්‍රමාණය:</b> <span id="bbc_s_remainingFeet"></span> Feet</p>
+          <p id="bbc_s_costRow" style="display:none;"><b>මුළු මිල:</b> රු. <span id="bbc_s_totalCost"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVANCED TAB -->
+    <div class="bbc-tab-panel" id="bbcTabAdvanced">
+
+      <div class="bbc-card">
+        <h3>Job විස්තර</h3>
+        <div class="bbc-two-col">
+          <div>
+            <label>දිනය:</label>
+            <input type="date" id="bbcJobDate">
+          </div>
+          <div>
+            <label>ස්ථානය:</label>
+            <input type="text" id="bbcJobLocation" placeholder="e.g. Matale site">
+          </div>
+        </div>
+      </div>
+
+      <div class="bbc-card">
+        <h3>අයිතමය එකතු කරන්න</h3>
+
+        <label>Box Bar Size:</label>
+        <select id="bbcBarType" onchange="bbcHandleSizeChange()">
+          <option value="1&quot; x 1&quot;" data-len="20">1" x 1"</option>
+          <option value="1&quot; x 1.5&quot;" data-len="20">1" x 1.5"</option>
+          <option value="1&quot; x 2&quot;" data-len="20">1" x 2"</option>
+          <option value="1.5&quot; x 1.5&quot;" data-len="20">1.5" x 1.5"</option>
+          <option value="2&quot; x 2&quot;" data-len="20">2" x 2"</option>
+          <option value="2&quot; x 1&quot;" data-len="20">2" x 1"</option>
+          <option value="2&quot; x 3&quot;" data-len="20">2" x 3"</option>
+          <option value="2&quot; x 4&quot;" data-len="20">2" x 4"</option>
+          <option value="3&quot; x 3&quot;" data-len="20">3" x 3"</option>
+          <option value="__add_new__" data-len="20">+ අලුත් size එකක් Add කරන්න</option>
+        </select>
+
+        <label>මුළු දිග (Length):</label>
+        <div class="input-group">
+          <div class="input-box">
+            <input type="number" id="bbcFeetQty" placeholder="අඩි (e.g. 3)" step="any" oninput="bbcLivePreview()">
+          </div>
+          <div class="input-box">
+            <input type="number" id="bbcInchQty" placeholder="අඟල් (e.g. 6)" step="any" oninput="bbcLivePreview()">
+          </div>
+        </div>
+
+        <label>එක් බටයක දිග (අඩි):</label>
+        <input type="number" id="bbcBarLength" value="20" oninput="bbcLivePreview()">
+
+        <label>Waste % (cutting loss):</label>
+        <input type="number" id="bbcWastePct" value="0" step="any" placeholder="e.g. 3" oninput="bbcLivePreview()">
+
+        <label>එක් බටයක මිල (රු.):</label>
+        <input type="number" id="bbcBarPrice" placeholder="e.g. 2500" step="any" oninput="bbcLivePreview()">
+
+        <div class="result" id="bbcLivePreviewBox" style="display:none; margin-top:12px;"></div>
+
+        <button class="bbc-btn-primary" onclick="bbcAddItem()">+ අයිතමය එකතු කරන්න</button>
+      </div>
+
+      <div class="bbc-card" id="bbcItemsCard" style="display:none;">
+        <h3>අයිතම ලැයිස්තුව</h3>
+        <div id="bbcItemsList"></div>
+        <div class="bbc-grand-total" id="bbcGrandTotal"></div>
+        <button class="bbc-btn-whatsapp" onclick="bbcShareWhatsapp()">📱 WhatsApp වලින් Share කරන්න</button>
+        <button class="bbc-btn-primary" onclick="bbcSaveToHistory()">💾 History එකට Save කරන්න</button>
+        <button class="bbc-btn-secondary" onclick="bbcClearItems()">🗑 අලුතින් පටන් ගන්න</button>
+      </div>
+
+      <div class="bbc-card">
+        <h3>History</h3>
+        <div id="bbcHistoryList"><p class="bbc-empty-msg">Saved quotations නෑ තාම</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= ILM TAB ================= -->
+<div id="tab-ilm" class="tab-panel ilm-scope">
+  <div class="wrap">
+    <h1>Item List Maker</h1>
+    <div class="sub">Dilhan Steel Works — build a material list, then save it as an image</div>
+
+    <div class="panel">
+      <div class="field-row">
+        <div class="field">
+          <label for="listTitle">Job / List title</label>
+          <input type="text" id="listTitle" value="Stair Railings Items list" placeholder="e.g. Stair Railings Items list">
+        </div>
+        <div class="field" style="max-width:170px;">
+          <label for="listDate">Date</label>
+          <input type="date" id="listDate">
+        </div>
+      </div>
+
+      <div class="photo-box">
+        <label for="photoInput">Scan a photo of a handwritten list</label>
+        <input type="file" id="photoInput" accept="image/*" capture="environment">
+        <div id="ocrStatus" class="ocr-status"></div>
+      </div>
+
+      <label style="margin-top:6px;">Items</label>
+      <div id="itemRows"></div>
+
+      <div class="row-actions">
+        <button class="add" id="addRowBtn" type="button">+ Add item</button>
+      </div>
+    </div>
+
+    <div id="previewHolder">
+      <div id="paper">
+        <div class="p-head">
+          <div class="p-title" id="pTitle">Stair Railings Items list</div>
+          <div class="p-date" id="pDate">—</div>
+        </div>
+        <div id="pItems"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <button class="generate" id="downloadBtn" type="button">Download as image</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= HW TAB ================= -->
+<div id="tab-hw" class="tab-panel hw-scope">
   <div class="app">
     <div class="header">
-      <!-- Display mode -->
       <div class="header-title-wrap" id="title-display" onclick="startEditTitle()" title="Click to edit">
         <span id="title-emoji">🔧</span>
         <h1 id="title-text">Hardware Order List <span class="count-badge" id="count">0</span></h1>
         <span class="edit-hint">✏️</span>
       </div>
-      <!-- Edit mode -->
       <div class="header-edit-row" id="title-edit">
         <input class="emoji-input" id="edit-emoji" type="text" maxlength="4" placeholder="🔧" />
         <input id="edit-title" type="text" placeholder="Hardware Order List" />
@@ -355,188 +689,633 @@
       <button class="action-btn pdf-btn" onclick="printPDF()">🖨 Print / PDF</button>
     </div>
   </div>
+</div>
 
-  <script>
-    let items = [
-      { item: "Side Flashing", qty: 9, details: "" },
-      { item: "වඩිම්බු", qty: 10, details: "" },
-      { item: "Gutter", qty: 1, details: "" },
-      { item: "End Cap L/R", qty: 6, details: "L3 / R3" },
-      { item: "Nossel", qty: 3, details: "" },
-      { item: "Rivets", qty: 200, details: '1" × ½" — Same colour' },
-      { item: "Silicon Small Tube", qty: 1, details: "" },
-      { item: "Gutter Brackets", qty: 4, details: "nut and bolt 8" },
-      { item: "Jaguar ඇන", qty: 30, details: "" },
-    ];
+<script>
+  /* ===================================================== */
+  /* Shared tab switching                                   */
+  /* ===================================================== */
+  function showTab(name){
+    document.getElementById('tab-ilm').classList.toggle('active', name === 'ilm');
+    document.getElementById('tab-hw').classList.toggle('active', name === 'hw');
+    document.getElementById('tab-bbc').classList.toggle('active', name === 'bbc');
+    document.getElementById('tabbtn-ilm').classList.toggle('active', name === 'ilm');
+    document.getElementById('tabbtn-hw').classList.toggle('active', name === 'hw');
+    document.getElementById('tabbtn-bbc').classList.toggle('active', name === 'bbc');
+  }
 
-    function render() {
-      const tbody = document.getElementById('list-body');
-      document.getElementById('count').textContent = items.length;
+  /* ===================================================== */
+  /* ILM SCRIPT — Item List Maker                           */
+  /* ===================================================== */
+  (function(){
+    let rowId = 0;
+    const itemRows = document.getElementById('itemRows');
+    const pTitle = document.getElementById('pTitle');
+    const pDate = document.getElementById('pDate');
+    const pItems = document.getElementById('pItems');
+    const listTitle = document.getElementById('listTitle');
+    const listDate = document.getElementById('listDate');
 
-      if (items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty">Items නෑ. ඉහළින් add කරන්න 👆</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = items.map((it, i) => `
-        <tr>
-          <td style="color:#aaa;font-size:12px">${i + 1}</td>
-          <td>${it.item}</td>
-          <td style="color:#555">${it.details}</td>
-          <td class="qty">${it.qty}</td>
-          <td><button class="del-btn" onclick="deleteItem(${i})" title="Delete">✕</button></td>
-        </tr>
-      `).join('');
-    }
-
-    function addItem() {
-      const item = document.getElementById('item').value.trim();
-      const qty = parseInt(document.getElementById('qty').value) || 1;
-      const details = document.getElementById('details').value.trim();
-
-      if (!item) {
-        document.getElementById('item').focus();
-        return;
-      }
-
-      items.push({ item, qty, details });
-      document.getElementById('item').value = '';
-      document.getElementById('qty').value = '';
-      document.getElementById('details').value = '';
-      document.getElementById('item').focus();
-      render();
-    }
-
-    function deleteItem(i) {
-      items.splice(i, 1);
-      render();
-    }
-
-    function clearAll() {
-      if (items.length === 0) return;
-      if (confirm('සියලුම items delete කරන්නද?')) {
-        items = [];
-        render();
-      }
-    }
-
-    function printPDF() {
-      window.print();
-    }
-
-    async function saveAsImage() {
-      const btn = document.getElementById('img-save-btn');
-      btn.classList.add('loading');
-      btn.textContent = '⏳ Generating...';
-
-      // A4 at 96dpi = 794 × 1123 px
-      const A4_W = 794;
-      const A4_H = 1123;
-
-      // Build a clean off-screen container styled like A4
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = `
-        position: fixed; left: -9999px; top: 0;
-        width: ${A4_W}px; min-height: ${A4_H}px;
-        background: #ffffff;
-        font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
-        padding: 40px;
-        box-sizing: border-box;
+    function addRow(name = '', qty = '') {
+      rowId++;
+      const id = rowId;
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.dataset.id = id;
+      row.innerHTML = `
+        <input type="text" placeholder="e.g. 2\\"x2\\" Box Bar 2mm" class="item-name" value="${escapeAttr(name)}">
+        <input type="text" placeholder="Qty" class="item-qty" value="${escapeAttr(qty)}">
+        <button type="button" class="rm-btn" aria-label="Remove item">✕</button>
       `;
-
-      // Clone just the app card (header + table)
-      const appEl = document.querySelector('.app');
-      const clone = appEl.cloneNode(true);
-
-      // Remove edit UI, input area, footer, delete buttons from clone
-      clone.querySelectorAll('.input-area, .footer, .del-btn, #title-edit, .edit-hint').forEach(el => el.remove());
-
-      // Show title display in case edit mode was open
-      const td = clone.querySelector('#title-display');
-      if (td) td.style.display = 'flex';
-
-      clone.style.cssText = 'max-width:100%; margin:0;';
-      wrapper.appendChild(clone);
-      document.body.appendChild(wrapper);
-
-      try {
-        const canvas = await html2canvas(wrapper, {
-          width: A4_W,
-          height: Math.max(A4_H, wrapper.scrollHeight + 80),
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          logging: false
-        });
-
-        // Crop/pad to exact A4 if shorter
-        const finalCanvas = document.createElement('canvas');
-        finalCanvas.width = A4_W * 2;
-        finalCanvas.height = A4_H * 2;
-        const ctx = finalCanvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-        ctx.drawImage(canvas, 0, 0);
-
-        const link = document.createElement('a');
-        const now = new Date();
-        const dateStr = now.toISOString().slice(0, 10);
-        link.download = `hardware-order-${dateStr}.png`;
-        link.href = finalCanvas.toDataURL('image/png');
-        link.click();
-      } finally {
-        document.body.removeChild(wrapper);
-        btn.classList.remove('loading');
-        btn.innerHTML = '🖼 Save as Image';
-      }
+      itemRows.appendChild(row);
+      row.querySelector('.item-name').addEventListener('input', renderPreview);
+      row.querySelector('.item-qty').addEventListener('input', renderPreview);
+      row.querySelector('.rm-btn').addEventListener('click', () => {
+        row.remove();
+        renderPreview();
+      });
+      renderPreview();
     }
 
-    let titleText = 'Hardware Order List';
-    let titleEmoji = '🔧';
-
-    function startEditTitle() {
-      document.getElementById('title-display').style.display = 'none';
-      document.getElementById('title-edit').style.display = 'flex';
-      document.getElementById('edit-emoji').value = titleEmoji;
-      document.getElementById('edit-title').value = titleText;
-      document.getElementById('edit-title').focus();
+    function escapeAttr(s){
+      return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    }
+    function escapeHtml(s){
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    function saveTitle() {
-      const newEmoji = document.getElementById('edit-emoji').value.trim() || '🔧';
-      const newTitle = document.getElementById('edit-title').value.trim() || 'Hardware Order List';
-      titleEmoji = newEmoji;
-      titleText = newTitle;
-      document.getElementById('title-emoji').textContent = newEmoji;
-      document.getElementById('title-text').innerHTML = newTitle + ' <span class="count-badge" id="count">' + items.length + '</span>';
-      document.getElementById('title-edit').style.display = 'none';
-      document.getElementById('title-display').style.display = 'flex';
+    function formatDate(d){
+      if(!d) return '—';
+      const parts = d.split('-');
+      if(parts.length !== 3) return d;
+      return `${parts[0]}/${parts[1]}/${parts[2]}`;
     }
 
-    // Allow Enter to save title
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && document.getElementById('title-edit').style.display === 'flex') {
-        saveTitle();
+    function renderPreview(){
+      pTitle.textContent = listTitle.value || 'Item list';
+      pDate.textContent = formatDate(listDate.value);
+
+      const rows = Array.from(itemRows.children);
+      if(rows.length === 0){
+        pItems.innerHTML = '<div class="p-empty">Add items to see them here</div>';
         return;
       }
-      if (e.key === 'Enter') {
-        if (document.getElementById('title-edit').style.display === 'flex') {
-          saveTitle();
-        } else {
-          addItem();
+      pItems.innerHTML = rows.map((row, i) => {
+        const name = row.querySelector('.item-name').value.trim();
+        const qty = row.querySelector('.item-qty').value.trim();
+        if(!name && !qty) return '';
+        return `<div class="p-item">
+            <div class="name"><span class="num">${i+1})</span>${escapeHtml(name || '—')}</div>
+            <div class="qty">${escapeHtml(qty ? '- ' + qty : '')}</div>
+          </div>`;
+      }).join('') || '<div class="p-empty">Add items to see them here</div>';
+    }
+
+    document.getElementById('addRowBtn').addEventListener('click', () => addRow());
+    listTitle.addEventListener('input', renderPreview);
+    listDate.addEventListener('input', renderPreview);
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const paper = document.getElementById('paper');
+      html2canvas(paper, {scale: 2, backgroundColor: '#f3efe4'}).then(canvas => {
+        const link = document.createElement('a');
+        const safeName = (listTitle.value || 'item-list').trim().replace(/[^a-z0-9]+/gi, '_').toLowerCase();
+        link.download = `${safeName || 'item_list'}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    });
+
+    // --- Photo scan (OCR) ---
+    const photoInput = document.getElementById('photoInput');
+    const ocrStatus = document.getElementById('ocrStatus');
+
+    function parseLineToItem(line){
+      let s = line.replace(/^\s*\d+\s*[\)\.\-]\s*/, '').trim();
+      if(!s) return null;
+      const m = s.match(/^(.*?)[\s]*[-–][\s]*([A-Za-z0-9¼½¾.\/\s]{1,12})$/);
+      if(m && m[1].trim()){
+        return { name: m[1].trim(), qty: m[2].trim() };
+      }
+      return { name: s, qty: '' };
+    }
+
+    function setOcrStatus(msg, isErr){
+      ocrStatus.textContent = msg;
+      ocrStatus.className = 'ocr-status' + (isErr ? ' err' : '');
+    }
+
+    photoInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+      if(typeof Tesseract === 'undefined'){
+        setOcrStatus('OCR library did not load — check your internet connection.', true);
+        return;
+      }
+      setOcrStatus('Reading photo… this can take a moment.');
+      try {
+        const { data } = await Tesseract.recognize(file, 'eng', {
+          logger: m => {
+            if(m.status === 'recognizing text'){
+              setOcrStatus(`Reading photo… ${Math.round((m.progress||0)*100)}%`);
+            }
+          }
+        });
+        const lines = (data.text || '')
+          .split('\n')
+          .map(l => l.trim())
+          .filter(l => l.length > 0);
+
+        if(lines.length === 0){
+          setOcrStatus('Could not read any text from that photo — try a clearer shot, or add items manually.', true);
+          return;
         }
+
+        itemRows.innerHTML = '';
+        lines.forEach(line => {
+          const parsed = parseLineToItem(line);
+          if(parsed) addRow(parsed.name, parsed.qty);
+        });
+        renderPreview();
+        setOcrStatus(`Read ${lines.length} line(s) from the photo — please check and correct the items below, handwriting isn't always caught perfectly.`);
+      } catch(err) {
+        console.error(err);
+        setOcrStatus('Something went wrong reading that photo. Try again or add items manually.', true);
       }
     });
 
-    // Show today's date
-    function setDate() {
-      const now = new Date();
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', options);
+    // init
+    const today = new Date();
+    listDate.value = today.toISOString().slice(0,10);
+    renderPreview();
+  })();
+
+  /* ===================================================== */
+  /* HW SCRIPT — Hardware Order List                        */
+  /* ===================================================== */
+  let items = [
+    { item: "Side Flashing", qty: 9, details: "" },
+    { item: "වඩිම්බු", qty: 10, details: "" },
+    { item: "Gutter", qty: 1, details: "" },
+    { item: "End Cap L/R", qty: 6, details: "L3 / R3" },
+    { item: "Nossel", qty: 3, details: "" },
+    { item: "Rivets", qty: 200, details: '1" × ½" — Same colour' },
+    { item: "Silicon Small Tube", qty: 1, details: "" },
+    { item: "Gutter Brackets", qty: 4, details: "nut and bolt 8" },
+    { item: "Jaguar ඇන", qty: 30, details: "" },
+  ];
+
+  function render() {
+    const tbody = document.getElementById('list-body');
+    document.getElementById('count').textContent = items.length;
+
+    if (items.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Items නෑ. ඉහළින් add කරන්න 👆</td></tr>';
+      return;
     }
 
-    setDate();
+    tbody.innerHTML = items.map((it, i) => `
+      <tr>
+        <td style="color:#aaa;font-size:12px">${i + 1}</td>
+        <td>${it.item}</td>
+        <td style="color:#555">${it.details}</td>
+        <td class="qty">${it.qty}</td>
+        <td><button class="del-btn" onclick="deleteItem(${i})" title="Delete">✕</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function addItem() {
+    const item = document.getElementById('item').value.trim();
+    const qty = parseInt(document.getElementById('qty').value) || 1;
+    const details = document.getElementById('details').value.trim();
+
+    if (!item) {
+      document.getElementById('item').focus();
+      return;
+    }
+
+    items.push({ item, qty, details });
+    document.getElementById('item').value = '';
+    document.getElementById('qty').value = '';
+    document.getElementById('details').value = '';
+    document.getElementById('item').focus();
     render();
-  </script>
+  }
+
+  function deleteItem(i) {
+    items.splice(i, 1);
+    render();
+  }
+
+  function clearAll() {
+    if (items.length === 0) return;
+    if (confirm('සියලුම items delete කරන්නද?')) {
+      items = [];
+      render();
+    }
+  }
+
+  function printPDF() {
+    window.print();
+  }
+
+  async function saveAsImage() {
+    const btn = document.getElementById('img-save-btn');
+    btn.classList.add('loading');
+    btn.textContent = '⏳ Generating...';
+
+    const A4_W = 794;
+    const A4_H = 1123;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = `
+      position: fixed; left: -9999px; top: 0;
+      width: ${A4_W}px; min-height: ${A4_H}px;
+      background: #ffffff;
+      font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+      padding: 40px;
+      box-sizing: border-box;
+    `;
+
+    const appEl = document.querySelector('#tab-hw .app');
+    const clone = appEl.cloneNode(true);
+
+    clone.querySelectorAll('.input-area, .footer, .del-btn, #title-edit, .edit-hint').forEach(el => el.remove());
+
+    const td = clone.querySelector('#title-display');
+    if (td) td.style.display = 'flex';
+
+    clone.style.cssText = 'max-width:100%; margin:0;';
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+
+    try {
+      const canvas = await html2canvas(wrapper, {
+        width: A4_W,
+        height: Math.max(A4_H, wrapper.scrollHeight + 80),
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      const finalCanvas = document.createElement('canvas');
+      finalCanvas.width = A4_W * 2;
+      finalCanvas.height = A4_H * 2;
+      const ctx = finalCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+      ctx.drawImage(canvas, 0, 0);
+
+      const link = document.createElement('a');
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10);
+      link.download = `hardware-order-${dateStr}.png`;
+      link.href = finalCanvas.toDataURL('image/png');
+      link.click();
+    } finally {
+      document.body.removeChild(wrapper);
+      btn.classList.remove('loading');
+      btn.innerHTML = '🖼 Save as Image';
+    }
+  }
+
+  let titleText = 'Hardware Order List';
+  let titleEmoji = '🔧';
+
+  function startEditTitle() {
+    document.getElementById('title-display').style.display = 'none';
+    document.getElementById('title-edit').style.display = 'flex';
+    document.getElementById('edit-emoji').value = titleEmoji;
+    document.getElementById('edit-title').value = titleText;
+    document.getElementById('edit-title').focus();
+  }
+
+  function saveTitle() {
+    const newEmoji = document.getElementById('edit-emoji').value.trim() || '🔧';
+    const newTitle = document.getElementById('edit-title').value.trim() || 'Hardware Order List';
+    titleEmoji = newEmoji;
+    titleText = newTitle;
+    document.getElementById('title-emoji').textContent = newEmoji;
+    document.getElementById('title-text').innerHTML = newTitle + ' <span class="count-badge" id="count">' + items.length + '</span>';
+    document.getElementById('title-edit').style.display = 'none';
+    document.getElementById('title-display').style.display = 'flex';
+  }
+
+  document.addEventListener('keydown', e => {
+    const hwTabActive = document.getElementById('tab-hw').classList.contains('active');
+    if (!hwTabActive) return;
+    if (e.key === 'Escape' && document.getElementById('title-edit').style.display === 'flex') {
+      saveTitle();
+      return;
+    }
+    if (e.key === 'Enter') {
+      if (document.getElementById('title-edit').style.display === 'flex') {
+        saveTitle();
+      } else if (document.activeElement && ['item','qty','details'].includes(document.activeElement.id)) {
+        addItem();
+      }
+    }
+  });
+
+  function setDate() {
+    const now = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('today-date').textContent = now.toLocaleDateString('en-GB', options);
+  }
+
+  setDate();
+  render();
+
+  /* ===================================================== */
+  /* BBC SCRIPT — Box Bar Calculator (full recovered app)    */
+  /* ===================================================== */
+  let bbcItems = [];
+
+  function bbcSwitchTab(tab) {
+    document.getElementById('bbcTabSimple').classList.toggle('active', tab === 'simple');
+    document.getElementById('bbcTabAdvanced').classList.toggle('active', tab === 'advanced');
+    document.getElementById('bbcTabBtnSimple').classList.toggle('active', tab === 'simple');
+    document.getElementById('bbcTabBtnAdvanced').classList.toggle('active', tab === 'advanced');
+    localStorage.setItem('boxbar_last_tab', tab);
+  }
+
+  function bbcComputeItem(feet, inches, barLen, wastePct, barPrice, type) {
+    let totalInchesInput = (feet * 12) + inches;
+    let totalFeet = totalInchesInput / 12;
+    let totalFeetWithWaste = totalFeet * (1 + (wastePct / 100));
+    let barFraction = totalFeetWithWaste / barLen;
+    let buyBars = Math.ceil(barFraction);
+    let remainingFeet = (buyBars * barLen) - totalFeetWithWaste;
+    let cost = buyBars * barPrice;
+    return { type, totalFeet, totalFeetWithWaste, barLen, buyBars, remainingFeet, barPrice, cost };
+  }
+
+  /* ---------- SIMPLE TAB ---------- */
+  function bbcSimpleCalculate(silent) {
+    let feet = parseFloat(document.getElementById('bbc_s_feetQty').value) || 0;
+    let inches = parseFloat(document.getElementById('bbc_s_inchQty').value) || 0;
+    let barLen = parseFloat(document.getElementById('bbc_s_barLength').value) || 20;
+    let barPrice = parseFloat(document.getElementById('bbc_s_barPrice').value) || 0;
+
+    if ((feet + inches) <= 0) {
+      document.getElementById('bbc_s_output').style.display = 'none';
+      if (!silent) alert("කරුණාකර අඩි හෝ අඟල් ගණන ඇතුළත් කරන්න.");
+      return;
+    }
+
+    let r = bbcComputeItem(feet, inches, barLen, 0, barPrice, '');
+
+    document.getElementById('bbc_s_totalFeet').innerText = r.totalFeet.toFixed(2);
+    document.getElementById('bbc_s_buyBars').innerText = r.buyBars + " ක් (අඩි " + (r.buyBars * barLen) + ")";
+    document.getElementById('bbc_s_remainingFeet').innerText = r.remainingFeet.toFixed(2);
+
+    if (barPrice > 0) {
+      document.getElementById('bbc_s_totalCost').innerText = r.cost.toLocaleString('en-LK');
+      document.getElementById('bbc_s_costRow').style.display = 'block';
+    } else {
+      document.getElementById('bbc_s_costRow').style.display = 'none';
+    }
+
+    document.getElementById('bbc_s_output').style.display = 'block';
+  }
+
+  /* ---------- ADVANCED TAB ---------- */
+  function bbcApplyPreset() {
+    let sel = document.getElementById('bbcBarType');
+    let len = sel.options[sel.selectedIndex].getAttribute('data-len');
+    document.getElementById('bbcBarLength').value = len;
+  }
+
+  function bbcHandleSizeChange() {
+    let sel = document.getElementById('bbcBarType');
+    if (sel.value === '__add_new__') {
+      let newSize = prompt("අලුත් size එක type කරන්න (e.g. 1.5\" x 2\"):");
+      if (newSize && newSize.trim()) {
+        bbcAddCustomSize(newSize.trim());
+        sel.value = newSize.trim();
+      } else {
+        sel.selectedIndex = 0;
+      }
+    }
+    bbcApplyPreset();
+    bbcLivePreview();
+  }
+
+  function bbcLivePreview() {
+    let feet = parseFloat(document.getElementById('bbcFeetQty').value) || 0;
+    let inches = parseFloat(document.getElementById('bbcInchQty').value) || 0;
+    let barLen = parseFloat(document.getElementById('bbcBarLength').value) || 20;
+    let wastePct = parseFloat(document.getElementById('bbcWastePct').value) || 0;
+    let barPrice = parseFloat(document.getElementById('bbcBarPrice').value) || 0;
+    let box = document.getElementById('bbcLivePreviewBox');
+
+    if ((feet + inches) <= 0) {
+      box.style.display = 'none';
+      return;
+    }
+
+    let r = bbcComputeItem(feet, inches, barLen, wastePct, barPrice, '');
+    box.style.display = 'block';
+    box.innerHTML = `<p><b>බට ගණන:</b> ${r.buyBars} (අඩි ${r.buyBars * barLen})</p>
+        <p><b>ඉතිරි:</b> ${r.remainingFeet.toFixed(2)} අඩි</p>
+        ${barPrice > 0 ? `<p><b>මිල:</b> රු. ${r.cost.toLocaleString('en-LK')}</p>` : ''}`;
+  }
+
+  function bbcAddCustomSize(sizeLabel) {
+    let sizes = JSON.parse(localStorage.getItem('boxbar_custom_sizes') || '[]');
+    if (!sizes.includes(sizeLabel)) {
+      sizes.push(sizeLabel);
+      localStorage.setItem('boxbar_custom_sizes', JSON.stringify(sizes));
+    }
+    bbcInsertSizeOption(sizeLabel);
+  }
+
+  function bbcInsertSizeOption(sizeLabel) {
+    let sel = document.getElementById('bbcBarType');
+    let exists = Array.from(sel.options).some(o => o.value === sizeLabel);
+    if (exists) return;
+    let opt = document.createElement('option');
+    opt.value = sizeLabel;
+    opt.text = sizeLabel;
+    opt.setAttribute('data-len', '20');
+    let addNewOpt = sel.querySelector('option[value="__add_new__"]');
+    sel.insertBefore(opt, addNewOpt);
+  }
+
+  function bbcLoadCustomSizes() {
+    let sizes = JSON.parse(localStorage.getItem('boxbar_custom_sizes') || '[]');
+    sizes.forEach(s => bbcInsertSizeOption(s));
+  }
+
+  function bbcAddItem() {
+    let feet = parseFloat(document.getElementById('bbcFeetQty').value) || 0;
+    let inches = parseFloat(document.getElementById('bbcInchQty').value) || 0;
+    let barLen = parseFloat(document.getElementById('bbcBarLength').value) || 20;
+    let wastePct = parseFloat(document.getElementById('bbcWastePct').value) || 0;
+    let barPrice = parseFloat(document.getElementById('bbcBarPrice').value) || 0;
+    let type = document.getElementById('bbcBarType').value;
+
+    if ((feet + inches) <= 0) {
+      alert("කරුණාකර අඩි හෝ අඟල් ගණන ඇතුළත් කරන්න.");
+      return;
+    }
+
+    let result = bbcComputeItem(feet, inches, barLen, wastePct, barPrice, type);
+    bbcItems.push(result);
+    bbcRenderItems();
+
+    document.getElementById('bbcFeetQty').value = '';
+    document.getElementById('bbcInchQty').value = '';
+    document.getElementById('bbcBarPrice').value = '';
+    document.getElementById('bbcLivePreviewBox').style.display = 'none';
+  }
+
+  function bbcRemoveItem(idx) {
+    bbcItems.splice(idx, 1);
+    bbcRenderItems();
+  }
+
+  function bbcRenderItems() {
+    let card = document.getElementById('bbcItemsCard');
+    let list = document.getElementById('bbcItemsList');
+    if (bbcItems.length === 0) {
+      card.style.display = 'none';
+      return;
+    }
+    card.style.display = 'block';
+    list.innerHTML = '';
+    let grandBars = 0, grandCost = 0;
+
+    bbcItems.forEach((it, idx) => {
+      grandBars += it.buyBars;
+      grandCost += it.cost;
+      let div = document.createElement('div');
+      div.className = 'bbc-item-row';
+      div.innerHTML = `
+          <div class="bbc-item-info">
+              <b>${it.type}</b><br>
+              දිග: ${it.totalFeet.toFixed(2)} අඩි | බට: ${it.buyBars} (${it.barLen} අඩි)<br>
+              ඉතිරි: ${it.remainingFeet.toFixed(2)} අඩි${it.cost > 0 ? ' | රු. ' + it.cost.toLocaleString('en-LK') : ''}
+          </div>
+          <button class="bbc-btn-danger" onclick="bbcRemoveItem(${idx})">✕</button>
+      `;
+      list.appendChild(div);
+    });
+
+    document.getElementById('bbcGrandTotal').innerText =
+      `මුළු බට: ${grandBars} | මුළු මිල: රු. ${grandCost.toLocaleString('en-LK')}`;
+  }
+
+  function bbcClearItems() {
+    if (bbcItems.length && !confirm("සියලුම අයිතම ඉවත් කරන්නද?")) return;
+    bbcItems = [];
+    bbcRenderItems();
+  }
+
+  function bbcBuildSummaryText() {
+    let date = document.getElementById('bbcJobDate').value || '-';
+    let loc = document.getElementById('bbcJobLocation').value || '-';
+    let lines = [`📋 *${loc}* - ${date}`, ''];
+    let grandBars = 0, grandCost = 0;
+    bbcItems.forEach((it, i) => {
+      grandBars += it.buyBars;
+      grandCost += it.cost;
+      lines.push(`${i+1}. ${it.type} - ${it.buyBars} bars (${it.totalFeet.toFixed(1)} අඩි)${it.cost > 0 ? ' - රු.' + it.cost.toLocaleString('en-LK') : ''}`);
+    });
+    lines.push('');
+    lines.push(`------------------`);
+    lines.push(`මුළු බට: ${grandBars}`);
+    lines.push(`මුළු මිල: රු. ${grandCost.toLocaleString('en-LK')}`);
+    return lines.join('\n');
+  }
+
+  function bbcShareWhatsapp() {
+    if (bbcItems.length === 0) { alert("කරුණාකර අයිතමයක් එකතු කරන්න."); return; }
+    let text = bbcBuildSummaryText();
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  }
+
+  function bbcSaveToHistory() {
+    if (bbcItems.length === 0) { alert("කරුණාකර අයිතමයක් එකතු කරන්න."); return; }
+    let date = document.getElementById('bbcJobDate').value || new Date().toISOString().slice(0,10);
+    let loc = document.getElementById('bbcJobLocation').value || '-';
+    let grandCost = bbcItems.reduce((s, it) => s + it.cost, 0);
+    let grandBars = bbcItems.reduce((s, it) => s + it.buyBars, 0);
+
+    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
+    history.unshift({
+      date, loc, items: JSON.parse(JSON.stringify(bbcItems)), grandBars, grandCost,
+      savedAt: new Date().toLocaleString()
+    });
+    localStorage.setItem('boxbar_history', JSON.stringify(history));
+    bbcRenderHistory();
+    alert("Save කළා ✅");
+  }
+
+  function bbcRenderHistory() {
+    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
+    let container = document.getElementById('bbcHistoryList');
+    if (history.length === 0) {
+      container.innerHTML = '<p class="bbc-empty-msg">Saved quotations නෑ තාම</p>';
+      return;
+    }
+    container.innerHTML = '';
+    history.forEach((h, idx) => {
+      let div = document.createElement('div');
+      div.className = 'bbc-hist-entry';
+      div.innerHTML = `
+          <div class="bbc-row">
+              <div><b>${h.loc}</b> — ${h.date}</div>
+              <div>රු. ${h.grandCost.toLocaleString('en-LK')}</div>
+          </div>
+          <div class="bbc-hist-buttons">
+              <button class="bbc-btn-secondary" onclick="bbcLoadHistory(${idx})">Load</button>
+              <button class="bbc-btn-danger" onclick="bbcDeleteHistory(${idx})">Delete</button>
+          </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function bbcLoadHistory(idx) {
+    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
+    let h = history[idx];
+    if (!h) return;
+    document.getElementById('bbcJobDate').value = h.date;
+    document.getElementById('bbcJobLocation').value = h.loc;
+    bbcItems = JSON.parse(JSON.stringify(h.items));
+    bbcRenderItems();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function bbcDeleteHistory(idx) {
+    if (!confirm("මේ record එක delete කරන්නද?")) return;
+    let history = JSON.parse(localStorage.getItem('boxbar_history') || '[]');
+    history.splice(idx, 1);
+    localStorage.setItem('boxbar_history', JSON.stringify(history));
+    bbcRenderHistory();
+  }
+
+  /* ---------- SHARED (BBC) ---------- */
+  function bbcToggleTheme() {
+    let isDark = document.getElementById('tab-bbc').classList.toggle('bbc-dark');
+    localStorage.setItem('boxbar_theme', isDark ? 'dark' : 'light');
+    document.getElementById('bbcThemeToggle').innerText = isDark ? '☀️' : '🌙';
+  }
+
+  function bbcInitTheme() {
+    let saved = localStorage.getItem('boxbar_theme');
+    if (saved === 'dark') {
+      document.getElementById('tab-bbc').classList.add('bbc-dark');
+      document.getElementById('bbcThemeToggle').innerText = '☀️';
+    }
+  }
+
+  bbcInitTheme();
+  bbcRenderHistory();
+  bbcLoadCustomSizes();
+</script>
 </body>
 </html>
